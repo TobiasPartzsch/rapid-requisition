@@ -27,16 +27,7 @@ if (queueContainer) {
         { id: "i5", size: { width: 2, height: 3 }, color: "#442222", rotated: false },
     ];
 
-    items.forEach(item => {
-        const itemEl = createItemElement(item);
-        itemEl.addEventListener("click", () => {
-            if (!gameState.heldItem) {
-                handlePickup(item);
-                itemEl.remove(); // Remove from queue when "in hand"
-            }
-        });
-        queueContainer.appendChild(itemEl);
-    });
+    items.forEach(item => addLootToQueue(item, queueContainer));
 }
 
 let gameState: GameState = {
