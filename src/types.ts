@@ -36,3 +36,9 @@ export interface InventoryState {
     readonly equipmentId: string;
     readonly pockets: readonly PocketState[];
 }
+
+export interface LootItem {
+    readonly id: string;
+    readonly size: Dimensions;
+    readonly color: string;
+}
