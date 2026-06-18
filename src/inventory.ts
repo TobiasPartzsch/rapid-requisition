@@ -1,4 +1,4 @@
-import { EquipmentDefinition, InventoryState, ItemPlacement, LootItem, PocketState } from "./types";
+import { Dimensions, EquipmentDefinition, InventoryState, ItemPlacement, LootItem, PocketState } from "./types";
 
 export function canPlaceItem(
     item: LootItem,
@@ -38,4 +38,10 @@ export function initializeInventory(blueprint: EquipmentDefinition): InventorySt
             placedItems: []
         }))
     };
+}
+
+export function getEffectiveDimensions(item: LootItem): Dimensions {
+    return item.rotated
+        ? { width: item.size.height, height: item.size.width }
+        : item.size;
 }
