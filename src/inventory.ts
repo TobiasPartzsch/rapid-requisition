@@ -1,4 +1,4 @@
-import { ItemPlacement, LootItem, PocketState } from "./types";
+import { EquipmentDefinition, InventoryState, ItemPlacement, LootItem, PocketState } from "./types";
 
 export function canPlaceItem(
     item: LootItem,
@@ -28,4 +28,14 @@ function isOverlapping(a: Omit<ItemPlacement, 'itemId'>, b: ItemPlacement): bool
         a.originY < b.originY + b.dimensions.height &&
         a.originY + a.dimensions.height > b.originY
     );
+}
+
+export function initializeInventory(blueprint: EquipmentDefinition): InventoryState {
+    return {
+        equipmentId: blueprint.id,
+        pockets: blueprint.pockets.map(p => ({
+            definition: p,
+            placedItems: []
+        }))
+    };
 }
