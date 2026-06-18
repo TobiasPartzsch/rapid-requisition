@@ -28,7 +28,7 @@ export interface ItemPlacement {
 
 export interface PocketState {
     readonly definition: PocketDefinition;
-    readonly placedItems: readonly ItemPlacement[];
+    placedItems: readonly ItemPlacement[];
 }
 
 export interface InventoryState {
