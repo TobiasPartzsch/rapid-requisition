@@ -15,6 +15,7 @@ export function generateRandomItem(constraints: GenerationConstraints): LootItem
     return {
         id: crypto.randomUUID(),
         size: { width: width, height: 1 },
-        color: "#808080"
+        color: "#808080",
+        rotated: false,
     };
 }

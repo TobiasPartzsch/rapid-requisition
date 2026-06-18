@@ -41,4 +41,5 @@ export interface LootItem {
     readonly id: string;
     readonly size: Dimensions;
     readonly color: string;
+    readonly rotated: boolean;
 }
