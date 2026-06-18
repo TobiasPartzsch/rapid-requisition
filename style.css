@@ -3,7 +3,19 @@
     grid-template-columns: repeat(var(--cols), 30px);
     grid-template-rows: repeat(var(--rows), 30px);
     gap: 2px;
-    background-color: #333;
-    border: 2px solid #555;
-    margin-bottom: 1rem;
+    background-color: #222;
+    padding: 4px;
+    border: 2px solid #444;
+    width: fit-content;
+}
+
+.pocket-grid::before {
+    content: "";
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    background-image:
+        linear-gradient(to right, #333 1px, transparent 1px),
+        linear-gradient(to bottom, #333 1px, transparent 1px);
+    background-size: 32px 32px;
+    /* 30px cell + 2px gap */
 }
