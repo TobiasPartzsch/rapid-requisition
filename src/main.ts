@@ -8,13 +8,6 @@ console.log("Starting Rapid Requisition")
 
 const inventoryContainer = document.getElementById("inventory-view");
 
-if (inventoryContainer) {
-    const vestBlueprint = EQUIPMENT_CATALOG.TACTICAL_VEST;
-    const currentInventory = initializeInventory(vestBlueprint);
-
-    renderInventory(currentInventory, inventoryContainer, handleCellClick);
-}
-
 const queueContainer = document.getElementById("loot-queue");
 
 if (queueContainer) {
@@ -30,13 +23,17 @@ if (queueContainer) {
     items.forEach(item => addLootToQueue(item, queueContainer));
 }
 
+let lastMouseX = 0;
+let lastMouseY = 0;
+
 let gameState: GameState = {
     inventory: initializeInventory(EQUIPMENT_CATALOG.TACTICAL_VEST),
     heldItem: null
 };
-let lastMouseX = 0;
-let lastMouseY = 0;
 
+if (inventoryContainer) {
+    renderInventory(gameState.inventory, inventoryContainer, handleCellClick);
+}
 
 const previewEl = document.getElementById("held-item-preview")!;
 
@@ -112,7 +109,7 @@ function handleCellClick(pocket: PocketState, x: number, y: number) {
     if (gameState.heldItem && canPlaceItem(gameState.heldItem, pocket, x, y)) {
         // Successful Requisition!
         const placement = {
-            itemId: gameState.heldItem.id,
+            item: gameState.heldItem,
             originX: x,
             originY: y,
             dimensions: getEffectiveDimensions(gameState.heldItem)
@@ -120,7 +117,7 @@ function handleCellClick(pocket: PocketState, x: number, y: number) {
 
         // Mutation: In a real app we might use a more functional approach,
         // but for the prototype, we update the reference
-        (pocket.placedItems as any[]).push(placement);
+        (pocket as PocketState).placedItems = [...pocket.placedItems, placement];
 
         gameState.heldItem = null;
         updateHeldItemVisuals();
