@@ -6,15 +6,17 @@ export function canPlaceItem(
     x: number,
     y: number
 ): boolean {
+    const dims = getEffectiveDimensions(item);
+
     // 1. Boundary Check
     if (x < 0 || y < 0) return false;
-    if (x + item.size.width > pocket.definition.dimensions.width) return false;
-    if (y + item.size.height > pocket.definition.dimensions.height) return false;
+    if (x + dims.width > pocket.definition.dimensions.width) return false;
+    if (y + dims.height > pocket.definition.dimensions.height) return false;
 
     // 2. Collision Check
     return !pocket.placedItems.some((placed) =>
         isOverlapping(
-            { originX: x, originY: y, dimensions: item.size },
+            { originX: x, originY: y, dimensions: dims },
             placed
         )
     );
