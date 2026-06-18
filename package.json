@@ -4,6 +4,7 @@
   "description": "A small game where you stuff your inventory as quickly as possible",
   "main": "index.js",
   "scripts": {
+    "build": "tsc && cp index.html dist/ && cp style.css dist/ 2>/dev/null || :",
     "test": "vitest run"
   },
   "repository": {
