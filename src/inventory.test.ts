@@ -7,10 +7,9 @@ describe("Inventory Logic", () => {
         definition: { id: "p1", dimensions: { width: 5, height: 5 } },
         placedItems: [
             {
-                itemId: "existing-item",
+                item: { id: "new", size: { width: 2, height: 2 }, color: "red", rotated: false },
                 originX: 1,
                 originY: 1,
-                dimensions: { width: 2, height: 2 }
             }
         ]
     };
