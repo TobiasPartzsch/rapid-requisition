@@ -21,10 +21,9 @@ export interface EquipmentDefinition {
  * Game State (Live Session Data)
  */
 export interface ItemPlacement {
-    readonly itemId: string;
+    readonly item: LootItem;
     readonly originX: number;
     readonly originY: number;
-    readonly dimensions: Dimensions;
 }
 
 export interface PocketState {

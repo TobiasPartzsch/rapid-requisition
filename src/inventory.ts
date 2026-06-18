@@ -16,7 +16,7 @@ export function canPlaceItem(
     // 2. Collision Check
     return !pocket.placedItems.some((placed) =>
         isOverlapping(
-            { originX: x, originY: y, dimensions: dims },
+            { item: item, originX: x, originY: y },
             placed
         )
     );
@@ -25,10 +25,10 @@ export function canPlaceItem(
 // Internal helper for clarity - keeping the geometry math separate
 function isOverlapping(a: Omit<ItemPlacement, 'itemId'>, b: ItemPlacement): boolean {
     return (
-        a.originX < b.originX + b.dimensions.width &&
-        a.originX + a.dimensions.width > b.originX &&
-        a.originY < b.originY + b.dimensions.height &&
-        a.originY + a.dimensions.height > b.originY
+        a.originX < b.originX + b.item.size.width &&
+        a.originX + a.item.size.width > b.originX &&
+        a.originY < b.originY + b.item.size.height &&
+        a.originY + a.item.size.height > b.originY
     );
 }
 
