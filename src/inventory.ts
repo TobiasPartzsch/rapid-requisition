@@ -47,3 +47,10 @@ export function getEffectiveDimensions(item: LootItem): Dimensions {
         ? { width: item.size.height, height: item.size.width }
         : item.size;
 }
+
+export function rotateItem(item: LootItem): LootItem {
+    return {
+        ...item,
+        rotated: !item.rotated
+    };
+}

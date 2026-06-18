@@ -43,3 +43,8 @@ export interface LootItem {
     readonly color: string;
     readonly rotated: boolean;
 }
+
+export interface GameState {
+    inventory: InventoryState;
+    heldItem: LootItem | null;
+}
