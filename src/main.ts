@@ -82,6 +82,34 @@ window.addEventListener("mousemove", (e) => {
     }
 });
 
+window.addEventListener("contextmenu", (e) => {
+    if (gameState.heldItem) {
+        e.preventDefault(); // Stop the context menu
+
+        // Return to queue (we'll need a way to re-add it)
+        const itemToReturn = gameState.heldItem;
+        gameState.heldItem = null;
+        updateHeldItemVisuals();
+
+        // Re-render in the queue
+        const queueContainer = document.getElementById("loot-queue");
+        if (queueContainer) {
+            addLootToQueue(itemToReturn, queueContainer);
+        }
+    }
+});
+
+function addLootToQueue(item: LootItem, container: HTMLElement) {
+    const itemEl = createItemElement(item);
+    itemEl.addEventListener("click", () => {
+        if (!gameState.heldItem) {
+            handlePickup(item);
+            itemEl.remove();
+        }
+    });
+    container.appendChild(itemEl);
+}
+
 function handlePickup(item: LootItem) {
     gameState.heldItem = item;
     updateHeldItemVisuals();
