@@ -19,3 +19,10 @@
     background-size: 32px 32px;
     /* 30px cell + 2px gap */
 }
+
+.loot-item {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    margin: 10px;
+    cursor: grab;
+    transition: transform 0.1s;
+}
