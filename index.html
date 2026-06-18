@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapid Requisition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <header>
+            <h1>Rapid Requisition</h1>
+            <div id="stats-panel">
+                <span>Score: <span id="current-score">0</span></span>
+                <button id="btn-start">Start Mission</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="loot-queue">
+                <!-- Randomly generated items appear here -->
+            </section>
+
+            <section id="inventory-view">
+                <!-- The player's pockets and grids appear here -->
+            </section>
+        </main>
+
+        <aside id="settings-panel">
+            <!-- Gear selection and cookies-based settings -->
+        </aside>
+    </div>
+    <script type="module" src="/dist/main.js"></script>
+</body>
+
+</html>
