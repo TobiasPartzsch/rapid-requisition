@@ -1,6 +1,7 @@
 {
   "name": "rapid-requisition",
   "version": "1.0.0",
+  "type": "module",
   "description": "A small game where you stuff your inventory as quickly as possible",
   "main": "index.js",
   "scripts": {
@@ -14,7 +15,6 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/TobiasPartzsch/rapid-requisition/issues"
   },
