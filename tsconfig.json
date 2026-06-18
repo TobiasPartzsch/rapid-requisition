@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "module": "ESNext",
-        "moduleResolution": "node",
+        "module": "node16",
+        "moduleResolution": "node16",
+        "rootDir": "./src",
+        "outDir": "./dist",
         "lib": [
             "ESNext",
             "DOM"
@@ -15,7 +17,6 @@
         "noImplicitReturns": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "outDir": "./dist"
     },
     "include": [
         "src/**/*"
