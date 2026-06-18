@@ -1,0 +1,38 @@
+export interface Dimensions {
+    readonly width: number;
+    readonly height: number;
+}
+
+/**
+ * Blueprints (Static Catalog Data)
+ */
+export interface PocketDefinition {
+    readonly id: string;
+    readonly dimensions: Dimensions;
+}
+
+export interface EquipmentDefinition {
+    readonly id: string;
+    readonly name: string;
+    readonly pockets: readonly PocketDefinition[];
+}
+
+/**
+ * Game State (Live Session Data)
+ */
+export interface ItemPlacement {
+    readonly itemId: string;
+    readonly originX: number;
+    readonly originY: number;
+    readonly dimensions: Dimensions;
+}
+
+export interface PocketState {
+    readonly definition: PocketDefinition;
+    readonly placedItems: readonly ItemPlacement[];
+}
+
+export interface InventoryState {
+    readonly equipmentId: string;
+    readonly pockets: readonly PocketState[];
+}
