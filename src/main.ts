@@ -1,5 +1,5 @@
 import { EQUIPMENT_CATALOG } from "./catalog.js";
-import { getEffectiveDimensions, initializeInventory } from "./inventory.js";
+import { getEffectiveDimensions, initializeInventory, rotateItem } from "./inventory.js";
 import { GameState, LootItem } from "./types.js";
 import { renderInventory } from "./view/inventoryRenderer.js";
 import { createItemElement, updatePreviewPosition } from "./view/itemRenderer.js";
@@ -61,6 +61,16 @@ function updateHeldItemVisuals() {
         document.body.style.cursor = "default"; // Restore cursor
     }
 }
+
+window.addEventListener("wheel", (_e) => {
+    if (gameState.heldItem) {
+        gameState.heldItem = rotateItem(gameState.heldItem);
+        updateHeldItemVisuals();
+        // Force immediate position update after rotation
+        const dims = getEffectiveDimensions(gameState.heldItem);
+        updatePreviewPosition(previewEl, lastMouseX, lastMouseY, dims);
+    }
+});
 
 window.addEventListener("mousemove", (e) => {
     lastMouseX = e.clientX;
