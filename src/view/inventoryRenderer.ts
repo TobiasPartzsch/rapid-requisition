@@ -10,6 +10,13 @@ export function renderInventory(state: InventoryState, container: HTMLElement): 
 }
 
 function createPocketElement(pocket: PocketState): HTMLElement {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("pocket-wrapper");
+
+    const label = document.createElement("span");
+    label.innerText = pocket.definition.id; // Use the ID as a label for now
+    label.classList.add("pocket-label");
+
     const el = document.createElement("div");
     el.classList.add("pocket-grid");
 
@@ -19,5 +26,7 @@ function createPocketElement(pocket: PocketState): HTMLElement {
 
     // TODO: Render placed items inside this pocket
 
-    return el;
+    wrapper.appendChild(label);
+    wrapper.appendChild(el);
+    return wrapper;
 }
