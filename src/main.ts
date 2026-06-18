@@ -106,21 +106,42 @@ function handlePickup(item: LootItem) {
 }
 
 function handleCellClick(pocket: PocketState, x: number, y: number) {
-    if (gameState.heldItem && canPlaceItem(gameState.heldItem, pocket, x, y)) {
-        // Successful Requisition!
-        const placement = {
-            item: gameState.heldItem,
-            originX: x,
-            originY: y,
-            dimensions: getEffectiveDimensions(gameState.heldItem)
-        };
+    if (gameState.heldItem) {
+        // try to drop
+        if (canPlaceItem(gameState.heldItem, pocket, x, y)) {
+            const placement = {
+                item: gameState.heldItem,
+                originX: x,
+                originY: y,
+            };
+            pocket.placedItems = [...pocket.placedItems, placement];
+            gameState.heldItem = null;
+            updateHeldItemVisuals();
+            renderInventory(gameState.inventory, inventoryContainer!, handleCellClick);
+        }
+    } else {
+        // try to lift existing item
+        const itemIndex = pocket.placedItems.findIndex(p => {
+            const dims = getEffectiveDimensions(p.item);
+            return x >= p.originX && x < p.originX + dims.width &&
+                y >= p.originY && y < p.originY + dims.height;
+        });
 
-        // Mutation: In a real app we might use a more functional approach,
-        // but for the prototype, we update the reference
-        (pocket as PocketState).placedItems = [...pocket.placedItems, placement];
+        if (itemIndex !== -1) {
+            const removedPlacement = pocket.placedItems[itemIndex];
 
-        gameState.heldItem = null;
-        updateHeldItemVisuals();
-        renderInventory(gameState.inventory, inventoryContainer!, handleCellClick);
+            // 1. Remove it from the grid (it's gone from the vest)
+            pocket.placedItems = [
+                ...pocket.placedItems.slice(0, itemIndex),
+                ...pocket.placedItems.slice(itemIndex + 1)
+            ];
+
+            // 2. Put it in the hand (it now follows the cursor)
+            // The handlePickup function sets gameState.heldItem and hides the cursor
+            handlePickup(removedPlacement.item);
+
+            // 3. Refresh the view so the pocket looks empty again
+            renderInventory(gameState.inventory, inventoryContainer!, handleCellClick);
+        }
     }
 }
