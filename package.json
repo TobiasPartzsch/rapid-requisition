@@ -17,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/TobiasPartzsch/rapid-requisition/issues"
   },
-  "homepage": "https://github.com/TobiasPartzsch/rapid-requisition#readme"
+  "homepage": "https://github.com/TobiasPartzsch/rapid-requisition#readme",
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
 }
