@@ -1,32 +1,33 @@
 import { InventoryState, PocketState } from "../types";
 
-export function renderInventory(state: InventoryState, container: HTMLElement): void {
-    container.innerHTML = ""; // Clear existing view
+type OnCellClick = (pocket: PocketState, x: number, y: number) => void;
 
+export function renderInventory(
+    state: InventoryState,
+    container: HTMLElement,
+    onCellClick: OnCellClick,
+): void {
+    container.innerHTML = "";
     state.pockets.forEach(pocket => {
-        const pocketElement = createPocketElement(pocket);
+        const pocketElement = createPocketElement(pocket, onCellClick);
         container.appendChild(pocketElement);
     });
 }
 
-function createPocketElement(pocket: PocketState): HTMLElement {
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("pocket-wrapper");
-
-    const label = document.createElement("span");
-    label.innerText = pocket.definition.id; // Use the ID as a label for now
-    label.classList.add("pocket-label");
-
+function createPocketElement(pocket: PocketState, onCellClick: OnCellClick): HTMLElement {
     const el = document.createElement("div");
     el.classList.add("pocket-grid");
-
-    // Using CSS variables to avoid magic numbers in CSS
     el.style.setProperty("--cols", pocket.definition.dimensions.width.toString());
     el.style.setProperty("--rows", pocket.definition.dimensions.height.toString());
 
-    // TODO: Render placed items inside this pocket
+    // Create a listener for the whole grid
+    el.addEventListener("click", (e) => {
+        const rect = el.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / 32); // 30px + 2px gap
+        const y = Math.floor((e.clientY - rect.top) / 32);
+        onCellClick(pocket, x, y);
+    });
 
-    wrapper.appendChild(label);
-    wrapper.appendChild(el);
-    return wrapper;
+    // TODO: Render the items already placed (we need this to see them!)
+    return el;
 }

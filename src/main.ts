@@ -1,6 +1,6 @@
 import { EQUIPMENT_CATALOG } from "./catalog.js";
-import { getEffectiveDimensions, initializeInventory, rotateItem } from "./inventory.js";
-import { GameState, LootItem } from "./types.js";
+import { canPlaceItem, getEffectiveDimensions, initializeInventory, rotateItem } from "./inventory.js";
+import { GameState, LootItem, PocketState } from "./types.js";
 import { renderInventory } from "./view/inventoryRenderer.js";
 import { createItemElement, updatePreviewPosition } from "./view/itemRenderer.js";
 
@@ -12,7 +12,7 @@ if (inventoryContainer) {
     const vestBlueprint = EQUIPMENT_CATALOG.TACTICAL_VEST;
     const currentInventory = initializeInventory(vestBlueprint);
 
-    renderInventory(currentInventory, inventoryContainer);
+    renderInventory(currentInventory, inventoryContainer, handleCellClick);
 }
 
 const queueContainer = document.getElementById("loot-queue");
@@ -106,4 +106,24 @@ function handlePickup(item: LootItem) {
     updateHeldItemVisuals();
     const dims = getEffectiveDimensions(item);
     updatePreviewPosition(previewEl, lastMouseX, lastMouseY, dims);
+}
+
+function handleCellClick(pocket: PocketState, x: number, y: number) {
+    if (gameState.heldItem && canPlaceItem(gameState.heldItem, pocket, x, y)) {
+        // Successful Requisition!
+        const placement = {
+            itemId: gameState.heldItem.id,
+            originX: x,
+            originY: y,
+            dimensions: getEffectiveDimensions(gameState.heldItem)
+        };
+
+        // Mutation: In a real app we might use a more functional approach,
+        // but for the prototype, we update the reference
+        (pocket.placedItems as any[]).push(placement);
+
+        gameState.heldItem = null;
+        updateHeldItemVisuals();
+        renderInventory(gameState.inventory, inventoryContainer!, handleCellClick);
+    }
 }
