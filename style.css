@@ -26,3 +26,28 @@
     cursor: grab;
     transition: transform 0.1s;
 }
+
+main {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 40px;
+}
+
+#loot-queue {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 1px solid #444;
+}
+
+#inventory-view {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
