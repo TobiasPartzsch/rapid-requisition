@@ -4,7 +4,7 @@ import { LootItem, PocketState } from "./types";
 
 describe("Inventory Logic", () => {
     const mockPocket: PocketState = {
-        definition: { id: "p1", dimensions: { width: 5, height: 5 } },
+        definition: { id: "p1", dimensions: { width: 5, height: 5 }, position: { x: 0, y: 0 } },
         placedItems: [
             {
                 item: { id: "new", size: { width: 2, height: 2 }, color: "red", rotated: false },
@@ -36,7 +36,7 @@ describe("Inventory Logic", () => {
 
     it("should allow a 2x1 item to fit in a 1x2 slot if rotated", () => {
         const pocket: PocketState = {
-            definition: { id: "p1", dimensions: { width: 1, height: 2 } },
+            definition: { id: "p1", dimensions: { width: 1, height: 2 }, position: { x: 0, y: 0 } },
             placedItems: []
         };
         const item: LootItem = { id: "2x1", size: { width: 2, height: 1 }, color: "blue", rotated: true };

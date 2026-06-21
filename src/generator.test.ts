@@ -40,7 +40,7 @@ describe("Item Generator", () => {
             }
         }
 
-        // With x^2 distribution, we expect significantly more than 25% (random) 
+        // With x^3 distribution, we expect significantly more than 25% (random) 
         // to be in the bottom-left quadrant of the size possibilities.
         expect(smallItems).toBeGreaterThan(iterations * 0.5);
     });
