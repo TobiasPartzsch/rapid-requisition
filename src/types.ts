@@ -46,4 +46,5 @@ export interface LootItem {
 export interface GameState {
     inventory: InventoryState;
     heldItem: LootItem | null;
+    lootQueue: readonly LootItem[];
 }
