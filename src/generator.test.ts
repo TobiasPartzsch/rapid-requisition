@@ -29,7 +29,7 @@ describe("Item Generator", () => {
     });
 
     it("should favor smaller items (statistical check)", () => {
-        const iterations = 1000;
+        const iterations = 10000;
         let smallItems = 0;
 
         for (let i = 0; i < iterations; i++) {
