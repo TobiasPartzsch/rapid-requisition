@@ -5,8 +5,10 @@
   "description": "A small game where you stuff your inventory as quickly as possible",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && cp index.html dist/ && cp style.css dist/ 2>/dev/null || :",
-    "test": "vitest run"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,7 @@
   "homepage": "https://github.com/TobiasPartzsch/rapid-requisition#readme",
   "devDependencies": {
     "typescript": "^6.0.3",
+    "vite": "^8.0.16",
     "vitest": "^4.1.9"
   }
 }
