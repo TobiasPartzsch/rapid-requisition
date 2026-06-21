@@ -34,10 +34,10 @@ export function generateLootForInventory(inventory: InventoryState): LootItem {
 }
 
 function rollSkewedDimension(max: number): number {
-    // x^2 distribution: smaller numbers are more likely.
+    // x^3 distribution: smaller numbers are more likely.
     // floor(0.0 * 4) + 1 = 1
     // floor(0.9 * 4) + 1 = 4
-    return Math.floor(Math.pow(Math.random(), 2) * max) + 1;
+    return Math.floor(Math.pow(Math.random(), 3) * max) + 1;
 }
 
 function generateHsl(w: number, h: number): string {
