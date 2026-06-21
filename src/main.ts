@@ -1,29 +1,24 @@
 import { EQUIPMENT_CATALOG } from "./catalog.js";
 import { generateLootForInventory } from "./generator.js";
 import { canPlaceItem, getEffectiveDimensions, initializeInventory, rotateItem } from "./inventory.js";
-import { GameState, LootItem, PocketState } from "./types.js";
-import { renderInventory } from "./view/inventoryRenderer.js";
-import { createItemElement, updatePreviewPosition } from "./view/itemRenderer.js";
+import { GameState } from "./types.js";
+import { screenToGrid } from "./view/constants.js";
+import { drawInventoryBackground, drawInventoryItems } from "./view/inventoryRenderer.js";
+import { drawHeldItem } from "./view/itemRenderer.js";
+import { drawLootQueue, getItemAtPosition } from "./view/lootQueueRenderer.js";
 
-console.log("Starting Rapid Requisition")
+// 1. Canvas Contexts
+const inventoryBgCanvas = document.getElementById("bg-canvas") as HTMLCanvasElement;
+const inventoryFgCanvas = document.getElementById("fg-canvas") as HTMLCanvasElement;
+const queueCanvas = document.getElementById("queue-canvas") as HTMLCanvasElement;
+const interactionCanvas = document.getElementById("interaction-canvas") as HTMLCanvasElement;
 
-const inventoryContainer = document.getElementById("inventory-view")!;
-const startButton = document.getElementById("btn-start");
-const queueContainer = document.getElementById("loot-queue")!;
+const bgCtx = inventoryBgCanvas.getContext("2d")!;
+const fgCtx = inventoryFgCanvas.getContext("2d")!;
+const queueCtx = queueCanvas.getContext("2d")!;
+const interactionCtx = interactionCanvas.getContext("2d")!;
 
-const INITIAL_QUEUE_SIZE = 5;
-
-// Generate a few items as requested
-const items = [
-    { id: "i1", size: { width: 2, height: 1 }, color: "#ff4444", rotated: false },
-    { id: "i2", size: { width: 1, height: 2 }, color: "#44ff44", rotated: false },
-    { id: "i3", size: { width: 2, height: 2 }, color: "#2200ff", rotated: false },
-    { id: "i4", size: { width: 3, height: 2 }, color: "#4444ff", rotated: false },
-    { id: "i5", size: { width: 2, height: 3 }, color: "#442222", rotated: false },
-];
-
-// items.forEach(item => addLootToQueue(item, queueContainer));
-
+// 2. Global State
 let lastMouseX = 0;
 let lastMouseY = 0;
 
@@ -33,201 +28,141 @@ let gameState: GameState = {
     lootQueue: [],
 };
 
+// 3. The Heartbeat (60 FPS)
+function gameLoop() {
+    syncUI();
+    requestAnimationFrame(gameLoop);
+}
+
 function syncUI() {
-    // Sync Queue
-    queueContainer.innerHTML = "";
-    gameState.lootQueue.forEach(item => {
-        const itemEl = createItemElement(item);
-        itemEl.addEventListener("click", () => handleQueueClick(item));
-        queueContainer.appendChild(itemEl);
-    });
+    // Clear dynamic layers
+    fgCtx.clearRect(0, 0, inventoryFgCanvas.width, inventoryFgCanvas.height);
+    queueCtx.clearRect(0, 0, queueCanvas.width, queueCanvas.height);
+    interactionCtx.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
 
-    // Sync Inventory
-    renderInventory(gameState.inventory, inventoryContainer, handleCellClick);
+    // Draw inventory items and queue
+    drawInventoryItems(fgCtx, gameState.inventory);
+    drawLootQueue(queueCtx, gameState.lootQueue);
 
-    // Sync Held Item (The "Mouse Ghost")
+    // Draw the "Ghost" item on the global overlay
     if (gameState.heldItem) {
-        previewEl.innerHTML = "";
-        previewEl.appendChild(createItemElement(gameState.heldItem));
-        previewEl.style.display = "block";
+        const rect = interactionCanvas.getBoundingClientRect();
+        const canvasX = lastMouseX - rect.left;
+        const canvasY = lastMouseY - rect.top;
+        drawHeldItem(interactionCtx, gameState.heldItem, canvasX, canvasY);
         document.body.style.cursor = "none";
-
-        const dims = getEffectiveDimensions(gameState.heldItem);
-        updatePreviewPosition(previewEl, lastMouseX, lastMouseY, dims);
     } else {
-        previewEl.style.display = "none";
         document.body.style.cursor = "default";
     }
 }
 
-function handleQueueClick(item: LootItem) {
-    if (gameState.heldItem) return;
-
-    // Update State
-    gameState.heldItem = item;
-    gameState.lootQueue = gameState.lootQueue.filter(i => i.id !== item.id);
-
-    syncUI();
-}
-
+// 4. Mission Logic
 function startMission() {
-    const equipment = EQUIPMENT_CATALOG.TACTICAL_VEST;
-
     gameState = {
-        inventory: initializeInventory(equipment),
+        ...gameState,
+        inventory: initializeInventory(EQUIPMENT_CATALOG.TACTICAL_VEST),
         heldItem: null,
-        lootQueue: Array.from({ length: INITIAL_QUEUE_SIZE }, () =>
+        lootQueue: Array.from({ length: 5 }, () =>
             generateLootForInventory(gameState.inventory)
         )
     };
-
-    syncUI();
+    // The background only needs to draw when gear or size changes
+    drawInventoryBackground(bgCtx, gameState.inventory);
 }
 
-renderInventory(gameState.inventory, inventoryContainer, handleCellClick);
+// 5. Interaction Handlers
+function handleInventoryClick(e: MouseEvent) {
+    const mouse = screenToGrid(e.offsetX, e.offsetY);
+    const pocket = gameState.inventory.pockets.find(p => {
+        const { x, y } = p.definition.position;
+        const { width, height } = p.definition.dimensions;
+        return mouse.x >= x && mouse.x < x + width &&
+            mouse.y >= y && mouse.y < y + height;
+    });
 
-const previewEl = document.getElementById("held-item-preview")!;
+    if (!pocket) return;
 
-function updateHeldItemVisuals() {
+    const relX = mouse.x - pocket.definition.position.x;
+    const relY = mouse.y - pocket.definition.position.y;
+
     if (gameState.heldItem) {
-        previewEl.innerHTML = "";
-        const itemEl = createItemElement(gameState.heldItem);
-        previewEl.appendChild(itemEl);
-        previewEl.style.display = "block";
-        document.body.style.cursor = "none"; // Hide standard cursor
+        if (canPlaceItem(gameState.heldItem, pocket, relX, relY)) {
+            pocket.placedItems = [...pocket.placedItems, {
+                item: gameState.heldItem,
+                originX: relX, originY: relY,
+            }];
+            gameState.heldItem = null;
+        }
     } else {
-        previewEl.style.display = "none";
-        document.body.style.cursor = "default"; // Restore cursor
+        const itemIdx = pocket.placedItems.findIndex(p => {
+            const dims = getEffectiveDimensions(p.item);
+            return relX >= p.originX && relX < p.originX + dims.width &&
+                relY >= p.originY && relY < p.originY + dims.height;
+        });
+
+        if (itemIdx !== -1) {
+            gameState.heldItem = pocket.placedItems[itemIdx].item;
+            pocket.placedItems = pocket.placedItems.filter((_, i) => i !== itemIdx);
+        }
     }
 }
 
-window.addEventListener("wheel", (_e) => {
-    if (gameState.heldItem) {
-        gameState.heldItem = rotateItem(gameState.heldItem);
-        syncUI();
+function handleQueueClick(e: MouseEvent) {
+    if (gameState.heldItem) return;
+    const idx = getItemAtPosition(gameState.lootQueue, e.offsetX, e.offsetY);
+    if (idx !== -1) {
+        gameState.heldItem = gameState.lootQueue[idx];
+        gameState.lootQueue = gameState.lootQueue.filter((_, i) => i !== idx);
     }
-});
+}
 
+// 6. Event Listeners
 window.addEventListener("mousemove", (e) => {
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
+});
 
-    if (gameState.heldItem) {
-        const dims = getEffectiveDimensions(gameState.heldItem);
-        updatePreviewPosition(previewEl, lastMouseX, lastMouseY, dims);
-    }
+window.addEventListener("wheel", () => {
+    if (gameState.heldItem) gameState.heldItem = rotateItem(gameState.heldItem);
 });
 
 window.addEventListener("contextmenu", (e) => {
     if (gameState.heldItem) {
-        e.preventDefault(); // Stop the context menu
-
+        e.preventDefault();
         gameState.lootQueue = [...gameState.lootQueue, gameState.heldItem];
         gameState.heldItem = null;
-        syncUI();
     }
 });
 
-startButton?.addEventListener("click", () => {
-    startMission();
+inventoryFgCanvas.addEventListener("click", handleInventoryClick);
+queueCanvas.addEventListener("click", handleQueueClick);
+document.getElementById("btn-start")?.addEventListener("click", startMission);
+
+// 7. Initialization
+function refreshCanvasSizes() {
+    const mainEl = document.querySelector("main")!;
+    const rect = mainEl.getBoundingClientRect();
+
+    // Global Overlay covers everything
+    interactionCanvas.width = rect.width;
+    interactionCanvas.height = rect.height;
+
+    // The Inventory and Queue need enough space for their content
+    // We can set these to a fixed size based on the catalog or just 
+    // give them a healthy default for now.
+    inventoryBgCanvas.width = 400;
+    inventoryBgCanvas.height = 600;
+    inventoryFgCanvas.width = 400;
+    inventoryFgCanvas.height = 600;
+    queueCanvas.width = 200;
+    queueCanvas.height = 600;
+}
+
+window.addEventListener("resize", () => {
+    refreshCanvasSizes();
+    drawInventoryBackground(bgCtx, gameState.inventory);
 });
 
-// function addLootToQueue(item: LootItem, container: HTMLElement) {
-//     const itemEl = createItemElement(item);
-//     itemEl.addEventListener("click", () => {
-//         if (!gameState.heldItem) {
-//             handlePickup(item);
-//             itemEl.remove();
-//         }
-//     });
-//     container.appendChild(itemEl);
-// }
-
-function handlePickup(item: LootItem) {
-    gameState.heldItem = item;
-    updateHeldItemVisuals();
-    const dims = getEffectiveDimensions(item);
-    updatePreviewPosition(previewEl, lastMouseX, lastMouseY, dims);
-}
-
-function handleCellClick(pocket: PocketState, x: number, y: number) {
-    if (gameState.heldItem) {
-        // try to drop
-        if (canPlaceItem(gameState.heldItem, pocket, x, y)) {
-            const placement = {
-                item: gameState.heldItem,
-                originX: x,
-                originY: y,
-            };
-            pocket.placedItems = [...pocket.placedItems, placement];
-            gameState.heldItem = null;
-            syncUI();
-        }
-    } else {
-        // try to lift existing item
-        const itemIndex = pocket.placedItems.findIndex(p => {
-            const dims = getEffectiveDimensions(p.item);
-            return x >= p.originX && x < p.originX + dims.width &&
-                y >= p.originY && y < p.originY + dims.height;
-        });
-
-        if (itemIndex !== -1) {
-            const removedPlacement = pocket.placedItems[itemIndex];
-
-            // 1. Remove it from the grid (it's gone from the vest)
-            pocket.placedItems = [
-                ...pocket.placedItems.slice(0, itemIndex),
-                ...pocket.placedItems.slice(itemIndex + 1)
-            ];
-
-            // 2. Put it in the hand (it now follows the cursor)
-            // The handlePickup function sets gameState.heldItem and hides the cursor
-            handlePickup(removedPlacement.item);
-
-            syncUI();
-        }
-    }
-}
-
-// function startMission() {
-//     // 1. Reset Inventory State
-//     // We fetch the clean definition from the catalog to reset pockets
-//     const equipment = EQUIPMENT_CATALOG[gameState.inventory.equipmentId];
-
-//     const resetPockets = equipment.pockets.map(pocketDef => ({
-//         definition: pocketDef,
-//         placedItems: [] // Clear the hoard!
-//     }));
-
-//     // 2. Generate New Queue
-//     const newQueue = Array.from({ length: INITIAL_QUEUE_SIZE }, () =>
-//         generateLootForInventory(gameState.inventory)
-//     );
-
-//     // 3. Update Global State
-//     gameState = {
-//         ...gameState,
-//         inventory: {
-//             ...gameState.inventory,
-//             pockets: resetPockets
-//         },
-//         lootQueue: newQueue,
-//         heldItem: null // Don't let them carry items between missions
-//     };
-
-//     // 4. Trigger Re-render
-//     refreshUI();
-// }
-
-// function refreshUI() {
-//     queueContainer.innerHTML = "";
-
-//     // Instead of manual DOM manipulation here, we use the data
-//     gameState.lootQueue.forEach(item => {
-//         // This is where you'd call your itemRenderer
-//         const element = createItemElement(item);
-//         queueContainer.appendChild(element);
-//     });
-
-//     renderInventory(gameState.inventory, inventoryContainer, handleCellClick);
-// }
+// Setup initial sizes and start loop
+refreshCanvasSizes();
+requestAnimationFrame(gameLoop);

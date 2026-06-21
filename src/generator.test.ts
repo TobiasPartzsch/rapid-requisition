@@ -7,7 +7,7 @@ describe("Item Generator", () => {
     const mockInventory: InventoryState = {
         equipmentId: "test-bag",
         pockets: [{
-            definition: { id: "p1", dimensions: { width: 4, height: 4 } },
+            definition: { id: "p1", dimensions: { width: 4, height: 4 }, position: { x: 0, y: 0 } },
             placedItems: []
         }]
     };

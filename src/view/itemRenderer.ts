@@ -1,24 +1,40 @@
-import { getEffectiveDimensions } from "../inventory.js";
-import { Dimensions, LootItem } from "../types.js";
+import { getEffectiveDimensions } from "../inventory";
+import { LootItem } from "../types";
+import { gridToPx } from "./constants";
 
-export function createItemElement(item: LootItem): HTMLElement {
-    const el = document.createElement("div");
-    el.classList.add("loot-item");
-
+export function drawLootItem(
+    ctx: CanvasRenderingContext2D,
+    item: LootItem,
+    pxX: number,
+    pxY: number
+): void {
     const dims = getEffectiveDimensions(item);
+    const w = gridToPx(dims.width);
+    const h = gridToPx(dims.height);
 
-    el.style.width = `${dims.width * 30 + (dims.width - 1) * 2}px`;
-    el.style.height = `${dims.height * 30 + (dims.height - 1) * 2}px`;
-    el.style.backgroundColor = item.color;
+    ctx.fillStyle = item.color;
+    ctx.fillRect(pxX, pxY, w, h);
 
-    return el;
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(pxX, pxY, w, h);
 }
 
-export function updatePreviewPosition(el: HTMLElement, x: number, y: number, dims: Dimensions): void {
-    // Calculate pixels: (units * 30px) + (gaps * 2px)
-    const widthPx = (dims.width * 30) + (dims.width - 1) * 2;
-    const heightPx = (dims.height * 30) + (dims.height - 1) * 2;
+/**
+ * Draws the "Ghost" item for the cursor, centered on coordinates.
+ */
+export function drawHeldItem(
+    ctx: CanvasRenderingContext2D,
+    item: LootItem,
+    pxX: number,
+    pxY: number
+): void {
+    const dims = getEffectiveDimensions(item);
+    const w = gridToPx(dims.width);
+    const h = gridToPx(dims.height);
 
-    el.style.left = `${x - widthPx / 2}px`;
-    el.style.top = `${y - heightPx / 2}px`;
+    ctx.save();
+    ctx.globalAlpha = 0.6; // Make it ethereal
+    drawLootItem(ctx, item, pxX - w / 2, pxY - h / 2);
+    ctx.restore();
 }

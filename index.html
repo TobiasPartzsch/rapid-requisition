@@ -21,14 +21,18 @@
             </div>
         </header>
 
-        <main>
-            <section id="loot-queue">
-                <!-- Randomly generated items appear here -->
-            </section>
+        <main id="game-arena" style="position: relative;">
+            <!-- Side-by-side logical regions -->
+            <div id="ui-layout" style="display: flex; gap: 20px;">
+                <canvas id="queue-canvas"></canvas>
+                <div id="inventory-stack" style="position: relative;">
+                    <canvas id="bg-canvas"></canvas>
+                    <canvas id="fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
+                </div>
+            </div>
 
-            <section id="inventory-view">
-                <!-- The player's pockets and grids appear here -->
-            </section>
+            <!-- The Global Overlay: Invisible but captures all movement/ghosting -->
+            <canvas id="interaction-canvas" style="position: absolute; top:0; left:0; pointer-events: none;"></canvas>
         </main>
 
         <aside id="settings-panel">

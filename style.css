@@ -34,6 +34,13 @@ main {
     align-items: flex-start;
     padding: 20px;
     gap: 40px;
+    border: 2px dashed #555;
+    /* The Arena Boundary */
+    min-height: 600px;
+    /* Ensure it doesn't collapse */
+    background-color: #dddddd;
+    overflow: hidden;
+    /* Keep the ghost from escaping */
 }
 
 #loot-queue {

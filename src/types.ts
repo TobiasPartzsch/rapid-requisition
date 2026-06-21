@@ -9,6 +9,7 @@ export interface Dimensions {
 export interface PocketDefinition {
     readonly id: string;
     readonly dimensions: Dimensions;
+    readonly position: { readonly x: number, readonly y: number }; // Relative grid offset
 }
 
 export interface EquipmentDefinition {

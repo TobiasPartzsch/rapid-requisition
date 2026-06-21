@@ -1,51 +1,76 @@
-import { getEffectiveDimensions } from "../inventory.js";
-import { InventoryState, PocketState } from "../types.js";
+import { getEffectiveDimensions } from "../inventory";
+import { InventoryState, LootItem } from "../types";
+import { gridToPx, UI_CONFIG } from "./constants";
+import { drawLootItem } from "./lootQueueRenderer";
 
-type OnCellClick = (pocket: PocketState, x: number, y: number) => void;
-
-export function renderInventory(
-    state: InventoryState,
-    container: HTMLElement,
-    onCellClick: OnCellClick,
+/**
+ * Draws the static grid infrastructure. 
+ * Call this only when equipment changes.
+ */
+export function drawInventoryBackground(
+    ctx: CanvasRenderingContext2D,
+    state: InventoryState
 ): void {
-    container.innerHTML = "";
+    const { CELL_SIZE, GAP, COLOR_GRID_BG } = UI_CONFIG;
+
+    // Clear the background first
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
     state.pockets.forEach(pocket => {
-        const pocketElement = createPocketElement(pocket, onCellClick);
-        container.appendChild(pocketElement);
+        const { width, height } = pocket.definition.dimensions;
+        const offset = pocket.definition.position;
+
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                const pxX = (offset.x + x) * (CELL_SIZE + GAP);
+                const pxY = (offset.y + y) * (CELL_SIZE + GAP);
+
+                ctx.fillStyle = COLOR_GRID_BG;
+                ctx.fillRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
+            }
+        }
     });
 }
 
+/**
+ * Draws the items currently placed in the pockets.
+ * Call this every time the foreground needs a refresh.
+ */
+export function drawInventoryItems(
+    ctx: CanvasRenderingContext2D,
+    state: InventoryState
+): void {
+    const { CELL_SIZE, GAP } = UI_CONFIG;
 
-function createPocketElement(pocket: PocketState, onCellClick: OnCellClick): HTMLElement {
-    const el = document.createElement("div");
-    el.classList.add("pocket-grid");
-    el.style.position = "relative"; // Ensure children position correctly
-    el.style.setProperty("--cols", pocket.definition.dimensions.width.toString());
-    el.style.setProperty("--rows", pocket.definition.dimensions.height.toString());
+    state.pockets.forEach(pocket => {
+        const offset = pocket.definition.position;
 
-    // Render existing items
-    pocket.placedItems.forEach(placement => {
-        const itemEl = document.createElement("div");
-        itemEl.classList.add("placed-item");
-        itemEl.style.position = "absolute"; // Critical!
+        pocket.placedItems.forEach(placement => {
+            // Calculate pixel position based on pocket offset + placement origin
+            const pxX = (offset.x + placement.originX) * (CELL_SIZE + GAP);
+            const pxY = (offset.y + placement.originY) * (CELL_SIZE + GAP);
 
-        const dims = getEffectiveDimensions(placement.item);
-
-        itemEl.style.left = `${placement.originX * 32}px`;
-        itemEl.style.top = `${placement.originY * 32}px`;
-        itemEl.style.width = `${dims.width * 30 + (dims.width - 1) * 2}px`;
-        itemEl.style.height = `${dims.height * 30 + (dims.height - 1) * 2}px`;
-        itemEl.style.backgroundColor = placement.item.color;
-
-        el.appendChild(itemEl);
+            drawLootItem(ctx, placement.item, pxX, pxY);
+        });
     });
+}
 
-    el.addEventListener("click", (e) => {
-        const rect = el.getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left) / 32); // 30px + 2px gap
-        const y = Math.floor((e.clientY - rect.top) / 32);
-        onCellClick(pocket, x, y);
-    });
+/**
+ * Draws the item following the cursor.
+ */
+export function drawHeldItem(
+    ctx: CanvasRenderingContext2D,
+    item: LootItem,
+    mouseX: number,
+    mouseY: number
+): void {
+    const dims = getEffectiveDimensions(item);
+    const w = gridToPx(dims.width);
+    const h = gridToPx(dims.height);
 
-    return el;
+    ctx.save();
+    ctx.globalAlpha = 0.7; // Transparency for the ghost effect
+    // Center the item on the mouse
+    drawLootItem(ctx, item, mouseX - w / 2, mouseY - h / 2);
+    ctx.restore();
 }
