@@ -1,5 +1,5 @@
 import { EQUIPMENT_CATALOG } from "./catalog.js";
-import { generateLootForInventory } from "./generator.js";
+import { generateLootForInventory, replenishLootQueue } from "./generator.js";
 import { canPlaceItem, getEffectiveDimensions, initializeInventory, rotateItem } from "./inventory.js";
 import { GameState } from "./types.js";
 import { screenToGrid } from "./view/constants.js";
@@ -92,6 +92,10 @@ function handleInventoryClick(e: MouseEvent) {
                 originX: relX, originY: relY,
             }];
             gameState.heldItem = null;
+            gameState.lootQueue = replenishLootQueue(
+                gameState.lootQueue,
+                gameState.inventory,
+            );
         }
     } else {
         const itemIdx = pocket.placedItems.findIndex(p => {

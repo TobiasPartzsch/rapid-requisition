@@ -1,3 +1,4 @@
+import { DEFAULT_QUEUE_SETTINGS, QueueSettings } from "./queue";
 import { InventoryState, LootItem } from "./types";
 
 export interface GenerationConstraints {
@@ -44,4 +45,22 @@ function generateHsl(w: number, h: number): string {
     // Using area as a seed for the hue
     const hue = (w * h * 137.5) % 360;
     return `hsl(${hue}, ${SETTINGS.saturation}%, ${SETTINGS.lightness}%)`;
+}
+
+/**
+ * Ensures the loot queue meets the minimum item requirement.
+ */
+export function replenishLootQueue(
+    currentQueue: readonly LootItem[],
+    inventory: InventoryState,
+    settings: QueueSettings = DEFAULT_QUEUE_SETTINGS
+): LootItem[] {
+    const itemsNeeded = settings.minItems - currentQueue.length;
+    if (itemsNeeded <= 0) return [...currentQueue];
+
+    const newItems = Array.from({ length: itemsNeeded }, () =>
+        generateLootForInventory(inventory)
+    );
+
+    return [...currentQueue, ...newItems];
 }
