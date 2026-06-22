@@ -8,11 +8,12 @@ export const UI_CONFIG = {
     GAP: 2,
     COLOR_GRID_BG: "#1a1a1a",
     COLOR_GRID_BORDER: "#333333",
+    COLOR_POCKET_BORDER: "#d8d1d1",
     QUEUE_PADDING: 10,
 } as const;
 
 export const VIEW_REGIONS = {
-    INVENTORY: { x: 50, y: 50, w: 400, h: 500 },
+    INVENTORY: { x: 50, y: 50, w: 600, h: 600 },
     QUEUE: { x: 500, y: 50, w: 200, h: 500 }
 } as const;
 

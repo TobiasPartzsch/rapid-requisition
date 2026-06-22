@@ -1,3 +1,8 @@
+export enum LootGenerationMode {
+    REFILL = 'REFILL',      // The current "Static Minimum" behavior
+    LARGE_HAUL = 'LARGE_HAUL' // Generate a massive grid of loot at the start
+}
+
 export interface Dimensions {
     readonly width: number;
     readonly height: number;
@@ -49,3 +54,18 @@ export interface GameState {
     heldItem: LootItem | null;
     lootQueue: readonly LootItem[];
 }
+
+export interface GameSettings {
+    readonly mode: LootGenerationMode;
+    readonly selectedGearKey: string;
+    readonly minQueueItems: number;
+    readonly gridVisible: boolean;
+    // Add audio/visual toggles and settings as needed
+}
+
+export const DEFAULT_SETTINGS: GameSettings = {
+    mode: LootGenerationMode.REFILL,
+    selectedGearKey: "FULL_RAID_KIT",
+    minQueueItems: 5,
+    gridVisible: true
+};
