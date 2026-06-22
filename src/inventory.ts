@@ -24,11 +24,14 @@ export function canPlaceItem(
 
 // Internal helper for clarity - keeping the geometry math separate
 function isOverlapping(a: Omit<ItemPlacement, 'itemId'>, b: ItemPlacement): boolean {
+    const dimsA = getEffectiveDimensions(a.item);
+    const dimsB = getEffectiveDimensions(b.item);
+
     return (
-        a.originX < b.originX + b.item.size.width &&
-        a.originX + a.item.size.width > b.originX &&
-        a.originY < b.originY + b.item.size.height &&
-        a.originY + a.item.size.height > b.originY
+        a.originX < b.originX + dimsB.width &&
+        a.originX + dimsA.width > b.originX &&
+        a.originY < b.originY + dimsB.height &&
+        a.originY + dimsA.height > b.originY
     );
 }
 
@@ -52,5 +55,21 @@ export function rotateItem(item: LootItem): LootItem {
     return {
         ...item,
         rotated: !item.rotated
+    };
+}
+
+/**
+ * Calculates the top-left origin of an item when the user 
+ * is targeting a specific grid cell as the center.
+ */
+export function getOriginFromCenter(
+    centerX: number,
+    centerY: number,
+    item: LootItem
+): { x: number, y: number } {
+    const dims = getEffectiveDimensions(item);
+    return {
+        x: centerX - Math.floor(dims.width / 2),
+        y: centerY - Math.floor(dims.height / 2)
     };
 }

@@ -1,6 +1,6 @@
 import { EQUIPMENT_CATALOG } from "./catalog.js";
 import { generateLootForInventory, replenishLootQueue } from "./generator.js";
-import { canPlaceItem, getEffectiveDimensions, initializeInventory, rotateItem } from "./inventory.js";
+import { canPlaceItem, getEffectiveDimensions, getOriginFromCenter, initializeInventory, rotateItem } from "./inventory.js";
 import { GameState } from "./types.js";
 import { screenToGrid } from "./view/constants.js";
 import { drawInventoryBackground, drawInventoryItems } from "./view/inventoryRenderer.js";
@@ -82,14 +82,18 @@ function handleInventoryClick(e: MouseEvent) {
 
     if (!pocket) return;
 
-    const relX = mouse.x - pocket.definition.position.x;
-    const relY = mouse.y - pocket.definition.position.y;
+    const pocketRel = {
+        x: mouse.x - pocket.definition.position.x,
+        y: mouse.y - pocket.definition.position.y
+    };
 
     if (gameState.heldItem) {
-        if (canPlaceItem(gameState.heldItem, pocket, relX, relY)) {
+        // Use our new helper to find where the top-left should be
+        const origin = getOriginFromCenter(pocketRel.x, pocketRel.y, gameState.heldItem);
+        if (canPlaceItem(gameState.heldItem, pocket, origin.x, origin.y)) {
             pocket.placedItems = [...pocket.placedItems, {
                 item: gameState.heldItem,
-                originX: relX, originY: relY,
+                originX: origin.x, originY: origin.y,
             }];
             gameState.heldItem = null;
             gameState.lootQueue = replenishLootQueue(
@@ -100,8 +104,8 @@ function handleInventoryClick(e: MouseEvent) {
     } else {
         const itemIdx = pocket.placedItems.findIndex(p => {
             const dims = getEffectiveDimensions(p.item);
-            return relX >= p.originX && relX < p.originX + dims.width &&
-                relY >= p.originY && relY < p.originY + dims.height;
+            return pocketRel.x >= p.originX && pocketRel.x < p.originX + dims.width &&
+                pocketRel.y >= p.originY && pocketRel.y < p.originY + dims.height;
         });
 
         if (itemIdx !== -1) {
