@@ -23,14 +23,17 @@
 
         <main id="ui-layout">
             <!-- Side-by-side logical regions -->
-            <canvas id="queue-canvas"></canvas>
-            <div id="inventory-stack" style="position: relative;">
-                <canvas id="bg-canvas"></canvas>
-                <canvas id="fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
-            </div>
+            <div id="game-arena" style="position: relative; display: flex; gap: 25px;">
+                <canvas id="queue-canvas"></canvas>
+                <div id="inventory-stack" style="position: relative;">
+                    <canvas id="bg-canvas"></canvas>
+                    <canvas id="fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
+                </div>
 
-            <!-- The Global Overlay: Invisible but captures all movement/ghosting -->
-            <canvas id="interaction-canvas" style="position: absolute; top:0; left:0; pointer-events: none;"></canvas>
+                <!-- The Global Overlay: Invisible but captures all movement/ghosting -->
+                <canvas id="interaction-canvas"
+                    style="position: absolute; top:0; left:0; pointer-events: none;"></canvas>
+            </div>
 
             <aside id="settings-panel">
                 <h3>Mission Settings</h3>

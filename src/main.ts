@@ -210,10 +210,9 @@ function refreshCanvasSizes() {
     // Match the queue height to the inventory height
     queueCanvas.height = invHeight;
 
-    // Crucial: Update the overlay to match the new flow
-    const layout = document.getElementById("ui-layout")!;
-    interactionCanvas.width = layout.scrollWidth;
-    interactionCanvas.height = layout.scrollHeight;
+    const arenaEl = document.getElementById("game-arena")!;
+    interactionCanvas.width = arenaEl.scrollWidth;
+    interactionCanvas.height = arenaEl.scrollHeight;
 }
 
 window.addEventListener("resize", () => {

@@ -114,6 +114,13 @@ header {
     /* Optional: helps see the boundary */
 }
 
+#game-arena {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 25px;
+}
+
 #interaction-canvas {
     position: absolute;
     top: 0;
