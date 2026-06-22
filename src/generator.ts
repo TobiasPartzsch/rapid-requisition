@@ -23,8 +23,12 @@ export function generateLootForInventory(inventory: InventoryState): LootItem {
         height: Math.max(max.height, p.definition.dimensions.height)
     }), { width: 1, height: 1 });
 
-    const w = rollSkewedDimension(bounds.width);
-    const h = rollSkewedDimension(bounds.height);
+    const rollA = rollSkewedDimension(bounds.width);
+    const rollB = rollSkewedDimension(bounds.height);
+
+    // Ensure width is always the larger dimension (Landscape orientation)
+    const w = Math.max(rollA, rollB);
+    const h = Math.min(rollA, rollB);
 
     return {
         id: crypto.randomUUID(),
@@ -35,10 +39,8 @@ export function generateLootForInventory(inventory: InventoryState): LootItem {
 }
 
 function rollSkewedDimension(max: number): number {
-    // x^3 distribution: smaller numbers are more likely.
-    // floor(0.0 * 4) + 1 = 1
-    // floor(0.9 * 4) + 1 = 4
-    return Math.floor(Math.pow(Math.random(), 3) * max) + 1;
+    // x^5 distribution: smaller numbers are more likely.
+    return Math.floor(Math.pow(Math.random(), 5) * max) + 1;
 }
 
 function generateHsl(w: number, h: number): string {
