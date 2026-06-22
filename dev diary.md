@@ -40,3 +40,26 @@ Today's “Wide” Prototype State
 [x] Centralized `syncUI` logic via `requestAnimationFrame`.
 [x] Regional hit-detection (Inventory vs. Queue coordinates).
 [x] Global mouse "Ghosting" across all UI regions.
+
+### Session 3: Persistence, Scale, and Coordinate Normalization
+
+#### Achievements
+- **Persistent State Vault**: Architected a typed `localStorage` synchronization layer for `GameSettings`. Implemented JSON serialization with a "Safe-Fail" default merge pattern to ensure schema evolution doesn't corrupt the player's hoard.
+- **Dynamic Bounding-Box Calculation**: Developed a "Logical-to-Physical" mapping engine that calculates the absolute grid bounds of multi-pocket equipment. This allows the canvas and renderer to dynamically resize and normalize coordinates based on non-uniform pocket placements.
+- **Symmetric Centroid Anchoring**: Refactored the drag-and-drop "Pivot Point." The system now translates the mouse position into a centered origin, allowing items to "hang" naturally from the cursor rather than dragging by the top-left corner.
+- **Relational View Scoping**: Scoped the interaction overlay to the specific "Game Arena" region. This prevents "Ghost Item" leakage into the settings panel while maintaining seamless movement between the source queue and the inventory targets.
+- **High-Fidelity Kit Blueprinting**: Expanded the `EQUIPMENT_CATALOG` to support complex raid gear. The engine now successfully manages and renders disjointed pocket groups (Backpack, Plate Carrier, and Mag Pouches) as a single logical `InventoryState`.
+
+#### Technical Struggles & Solutions
+- **The "Mirror Image" Illusion**: Diagnosed a 404/MIME-type conflict on GitHub Pages caused by stale deployment sources. Resolved by migrating the CI/CD pipeline from "Branch Deployment" to "GitHub Actions" and explicitly defining the `base` path in `vite.config.ts`.
+- **Negative Coordinate Displacement**: Encountered clipping issues when pockets were defined with negative offsets. Solution was to normalize the data hoard to a `(0,0)` origin, simplifying the hit-detection math and removing redundant renderer translation offsets.
+- **Immutability Assignment Ghosting**: Debugged a "Silent Replenishment" failure where the state was being calculated but not re-assigned. Reinforced the unidirectional flow by ensuring `gameState.lootQueue` is explicitly updated with the return value of the replenishment pure function.
+- **Z-Index Layer Conflict**: Fixed a layout bug where the interaction canvas was occupying a flex-box slot and displacing the UI. Resolved via absolute positioning within a relative-anchored "Arena" container.
+
+#### Today's “Engineered” Prototype State
+[x] GitHub Actions CI/CD pipeline with Vite-specific base paths.
+[x] LocalStorage-backed settings persistence.
+[x] Dynamic multi-pocket coordinate system (Raid Gear support).
+[x] Automatic Loot Replenishment (Static Minimum logic).
+[x] Centered-cursor item placement and improved rotation collision.
+[x] Regionalized Interaction Overlay (No-leak ghosting).
