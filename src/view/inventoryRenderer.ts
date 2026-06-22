@@ -28,6 +28,14 @@ export function drawInventoryBackground(
                 ctx.fillStyle = COLOR_GRID_BG;
                 ctx.fillRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
             }
+            const borderX = offset.x * (CELL_SIZE + GAP) - 1;
+            const borderY = offset.y * (CELL_SIZE + GAP) - 1;
+            const borderWidth = width * (CELL_SIZE + GAP) - GAP + 2;
+            const borderHeight = height * (CELL_SIZE + GAP) - GAP + 2;
+
+            ctx.strokeStyle = UI_CONFIG.COLOR_POCKET_BORDER;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(borderX, borderY, borderWidth, borderHeight);
         }
     });
 }

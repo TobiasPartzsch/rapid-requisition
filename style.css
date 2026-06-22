@@ -36,7 +36,7 @@ main {
     gap: 40px;
     border: 2px dashed #555;
     /* The Arena Boundary */
-    min-height: 600px;
+    min-height: auto;
     /* Ensure it doesn't collapse */
     background-color: #dddddd;
     overflow: hidden;
@@ -66,4 +66,59 @@ main {
     /* Let clicks pass through to the grid for "lifting" later */
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-sizing: border-box;
+}
+
+/* Vertical stack for the whole app */
+#game-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+}
+
+#settings-panel {
+    flex: 0 0 250px;
+    /* Don't grow, don't shrink, stay 250px wide */
+    background: #3f3e3e;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* Header with title and timer takes full width at the top */
+header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+/* Horizontal stack for the game arena */
+#ui-layout {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    align-items: flex-start;
+    background-color: #555555;
+    /* Darker background for the "vault" */
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* Ensure the inventory stack stays relative for its absolute canvases */
+#inventory-stack {
+    position: relative;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    /* Optional: helps see the boundary */
+}
+
+#interaction-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1000;
+    /* Ensure it stays above everything else */
 }

@@ -15,29 +15,41 @@
     <div id="game-container">
         <header>
             <h1>Rapid Requisition</h1>
-            <div id="stats-panel">
-                <span>Score: <span id="current-score">0</span></span>
+            <div id="mission-meta">
+                <span id="timer">00:00</span>
                 <button id="btn-start">Start Mission</button>
             </div>
         </header>
 
-        <main id="game-arena" style="position: relative;">
+        <main id="ui-layout">
             <!-- Side-by-side logical regions -->
-            <div id="ui-layout" style="display: flex; gap: 20px;">
-                <canvas id="queue-canvas"></canvas>
-                <div id="inventory-stack" style="position: relative;">
-                    <canvas id="bg-canvas"></canvas>
-                    <canvas id="fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
-                </div>
+            <canvas id="queue-canvas"></canvas>
+            <div id="inventory-stack" style="position: relative;">
+                <canvas id="bg-canvas"></canvas>
+                <canvas id="fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
             </div>
 
             <!-- The Global Overlay: Invisible but captures all movement/ghosting -->
             <canvas id="interaction-canvas" style="position: absolute; top:0; left:0; pointer-events: none;"></canvas>
-        </main>
 
-        <aside id="settings-panel">
-            <!-- Gear selection and cookies-based settings -->
-        </aside>
+            <aside id="settings-panel">
+                <h3>Mission Settings</h3>
+                <div class="setting-group">
+                    <label>Gear: <select id="select-gear"></select></label>
+                    <br>
+                    <label for="select-mode">Loot Mode:</label>
+                    <select id="select-mode">
+                        <option value="REFILL">Endless Stream (Refill)</option>
+                        <option value="LARGE_HAUL">Single Large Haul</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="check-grid" checked> Show Grid
+                    </label>
+                </div>
+            </aside>
+        </main>
     </div>
     <script type="module" src="src/main.ts"></script>
 </body>

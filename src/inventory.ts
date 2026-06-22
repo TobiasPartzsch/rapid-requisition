@@ -73,3 +73,23 @@ export function getOriginFromCenter(
         y: centerY - Math.floor(dims.height / 2)
     };
 }
+
+export function getInventoryBounds(state: InventoryState) {
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+
+    state.pockets.forEach(p => {
+        const { x, y } = p.definition.position;
+        const { width, height } = p.definition.dimensions;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + width);
+        maxY = Math.max(maxY, y + height);
+    });
+
+    return {
+        minX, minY,
+        width: maxX - minX,
+        height: maxY - minY
+    };
+}

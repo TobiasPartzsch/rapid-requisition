@@ -1,8 +1,9 @@
 import { EQUIPMENT_CATALOG } from "./catalog.js";
-import { generateLootForInventory, replenishLootQueue } from "./generator.js";
-import { canPlaceItem, getEffectiveDimensions, getOriginFromCenter, initializeInventory, rotateItem } from "./inventory.js";
+import { replenishLootQueue } from "./generator.js";
+import { canPlaceItem, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem } from "./inventory.js";
+import { loadSettings, saveSettings } from "./settings.js";
 import { GameState } from "./types.js";
-import { screenToGrid } from "./view/constants.js";
+import { screenToGrid, UI_CONFIG } from "./view/constants.js";
 import { drawInventoryBackground, drawInventoryItems } from "./view/inventoryRenderer.js";
 import { drawHeldItem } from "./view/itemRenderer.js";
 import { drawLootQueue, getItemAtPosition } from "./view/lootQueueRenderer.js";
@@ -58,15 +59,16 @@ function syncUI() {
 
 // 4. Mission Logic
 function startMission() {
+    const blueprint = EQUIPMENT_CATALOG[currentSettings.selectedGearKey as keyof typeof EQUIPMENT_CATALOG];
+
     gameState = {
         ...gameState,
-        inventory: initializeInventory(EQUIPMENT_CATALOG.TACTICAL_VEST),
+        inventory: initializeInventory(blueprint),
         heldItem: null,
-        lootQueue: Array.from({ length: 5 }, () =>
-            generateLootForInventory(gameState.inventory)
-        )
+        lootQueue: replenishLootQueue([], initializeInventory(blueprint))
     };
-    // The background only needs to draw when gear or size changes
+
+    refreshCanvasSizes();
     drawInventoryBackground(bgCtx, gameState.inventory);
 }
 
@@ -147,23 +149,71 @@ queueCanvas.addEventListener("click", handleQueueClick);
 document.getElementById("btn-start")?.addEventListener("click", startMission);
 
 // 7. Initialization
+// Load initial settings
+let currentSettings = loadSettings();
+initSettings();
+
+function initSettings() {
+    const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
+    const modeSelect = document.getElementById("select-mode") as HTMLSelectElement;
+
+    // Populate Gear Select
+    Object.keys(EQUIPMENT_CATALOG).forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = key.replace(/_/g, ' ');
+        gearSelect.appendChild(opt);
+    });
+
+    // Set initial UI values
+    gearSelect.value = currentSettings.selectedGearKey;
+    modeSelect.value = currentSettings.mode;
+
+    // Listen for changes
+    gearSelect.addEventListener("change", () => {
+        currentSettings = { ...currentSettings, selectedGearKey: gearSelect.value };
+        saveSettings(currentSettings);
+        applySettings();
+    });
+
+    modeSelect.addEventListener("change", () => {
+        currentSettings = { ...currentSettings, mode: modeSelect.value as any };
+        saveSettings(currentSettings);
+        applySettings();
+    });
+}
+
+function applySettings() {
+    // This updates the game state based on settings
+    const blueprint = EQUIPMENT_CATALOG[currentSettings.selectedGearKey as keyof typeof EQUIPMENT_CATALOG];
+    gameState.inventory = initializeInventory(blueprint);
+
+    // Refresh the visuals
+    refreshCanvasSizes();
+    drawInventoryBackground(bgCtx, gameState.inventory);
+}
+
 function refreshCanvasSizes() {
-    const mainEl = document.querySelector("main")!;
-    const rect = mainEl.getBoundingClientRect();
+    const { CELL_SIZE, GAP } = UI_CONFIG;
+    // Calculate bounds based on the max x+width and y+height
+    const bounds = getInventoryBounds(gameState.inventory);
 
-    // Global Overlay covers everything
-    interactionCanvas.width = rect.width;
-    interactionCanvas.height = rect.height;
+    // Width and Height should be derived from the actual grid extent
+    const invWidth = bounds.width * (CELL_SIZE + GAP);
+    const invHeight = bounds.height * (CELL_SIZE + GAP);
 
-    // The Inventory and Queue need enough space for their content
-    // We can set these to a fixed size based on the catalog or just 
-    // give them a healthy default for now.
-    inventoryBgCanvas.width = 400;
-    inventoryBgCanvas.height = 600;
-    inventoryFgCanvas.width = 400;
-    inventoryFgCanvas.height = 600;
-    queueCanvas.width = 200;
-    queueCanvas.height = 600;
+    inventoryBgCanvas.width = invWidth;
+    inventoryBgCanvas.height = invHeight;
+    inventoryFgCanvas.width = invWidth;
+    inventoryFgCanvas.height = invHeight;
+
+    // Match the queue height to the inventory height
+    queueCanvas.height = invHeight;
+
+    // Crucial: Update the overlay to match the new flow
+    const layout = document.getElementById("ui-layout")!;
+    interactionCanvas.width = layout.scrollWidth;
+    interactionCanvas.height = layout.scrollHeight;
 }
 
 window.addEventListener("resize", () => {
@@ -173,4 +223,5 @@ window.addEventListener("resize", () => {
 
 // Setup initial sizes and start loop
 refreshCanvasSizes();
+applySettings();
 requestAnimationFrame(gameLoop);
