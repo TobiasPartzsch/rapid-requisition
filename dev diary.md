@@ -63,3 +63,26 @@ Today's “Wide” Prototype State
 [x] Automatic Loot Replenishment (Static Minimum logic).
 [x] Centered-cursor item placement and improved rotation collision.
 [x] Regionalized Interaction Overlay (No-leak ghosting).
+
+### Session 4: The Spatial Hoard and Unified Interaction
+
+#### Achievements
+- **Spatial Loot Sovereignty**: Successfully replaced the linear "Loot Queue" with a fully realized 30x20 spatial "Loot Chest." The source of items is now a  first-class InventoryState object, governed by the same grid rules as the player's gear.
+- **Polymorphic Interaction Strategy**: Refactored the click-handling engine to be inventory-agnostic. By passing the target InventoryState as a parameter, the same logic now manages both the player's tactical vest and the external loot chest, drastically reducing code duplication (DRY).
+- **Greedy Spatial Generator**: Developed a "First-Fit" packing algorithm for the LARGE_HAUL mode. The engine now populates the 600-cell chest grid by probabilistically attempting to pack generated items into available voids.
+- **Origin-Aware Replenishment**: Implemented a "Conservation of Loot" tracker. The system now distinguishes between "Internal Reordering" and "Cross-Container Transfers," triggering a random-spot refill in the chest only when an item is successfully relocated to the player's inventory.
+- **Redundant Rotation Inputs**: Expanded the accessibility of the rotation mechanic. In addition to the mousewheel, the engine now listens for [R] and [Space] keydown events, providing a more responsive feel during high-speed requisitioning.
+
+#### Technical Struggles & Solutions
+- **The "Vellum" Overwrite Bug**: Diagnosed a rendering issue where items were "ghosting" (persisting) after being picked up. Solution: Explicitly clearing the specific Foreground Context of the loot chest during the syncUI heartbeat, ensuring the canvas doesn't retain stale pixel data.
+- **Canvas Context Cross-Wiring**: Resolved a copy-paste regression where the Loot Chest was drawing into the Inventory's context. Reinforced strict variable naming for invBgCtx vs. lootBgCtx to ensure logical separation of the two arenas.
+- **The "Resize-Reset" Trap**: Addressed a bug where canvases appeared blank or tiny after a mission start. Re-ordered the initialization sequence to ensure refreshCanvasSizes() resets the physical pixel dimensions before the static background draw calls are issued.
+- **Coordinate Normalization**: Verified that e.offsetX/Y remains localized to the specific canvas being clicked, allowing the generic interaction handler to function without complex global-to-local translation math.
+
+#### Today's “Engineered” Prototype State
+[x] 30x20 Large Loot Chest (Spatial source).
+[x] Unified handleInventoryInteraction for all containers.
+[x] "First-Fit" greedy spatial loot generation.
+[x] Event-driven replenishment (Refill on drop-in-bag).
+[x] Keyboard-based rotation (R and Space).
+[x] Multi-context canvas clearing (No ghosting).
