@@ -149,6 +149,15 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("wheel", () => {
     if (gameState.heldItem) gameState.heldItem = rotateItem(gameState.heldItem);
 });
+window.addEventListener("keydown", (e) => {
+    if (!gameState.heldItem) return;
+
+    if (e.key.toLowerCase() === "r" || e.key === " ") {
+        if (e.key === " ") e.preventDefault();
+
+        gameState.heldItem = rotateItem(gameState.heldItem);
+    }
+});
 
 window.addEventListener("contextmenu", (e) => {
     if (gameState.heldItem) {
@@ -178,11 +187,6 @@ lootFgCanvas.addEventListener("click", (e) => {
 });
 
 document.getElementById("btn-start")?.addEventListener("click", startMission);
-
-// 7. Initialization
-// Load initial settings
-let currentSettings = loadSettings();
-initSettings();
 
 function initSettings() {
     const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
@@ -216,12 +220,19 @@ function initSettings() {
 
 function applySettings() {
     // This updates the game state based on settings
-    const blueprint = EQUIPMENT_CATALOG[currentSettings.selectedGearKey as keyof typeof EQUIPMENT_CATALOG];
+    const key = currentSettings.selectedGearKey;
+    const blueprint = EQUIPMENT_CATALOG[key];
     gameState.inventory = initializeInventory(blueprint);
+
+    if (!blueprint) {
+        console.error(`Missing blueprint for key: ${key}`);
+        return;
+    }
 
     // Refresh the visuals
     refreshCanvasSizes();
     drawInventoryBackground(invBgCtx, gameState.inventory);
+    drawInventoryBackground(lootBgCtx, gameState.lootSource);
 }
 
 function refreshCanvasSizes() {
@@ -258,6 +269,10 @@ window.addEventListener("resize", () => {
 });
 
 // Setup initial sizes and start loop
-refreshCanvasSizes();
-applySettings();
-requestAnimationFrame(gameLoop);
+let currentSettings = loadSettings();
+initSettings();
+
+requestAnimationFrame(() => {
+    applySettings();
+    gameLoop();
+});
