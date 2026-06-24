@@ -1,7 +1,6 @@
 import { getEffectiveDimensions } from "../inventory";
 import { InventoryState, LootItem } from "../types";
 import { gridToPx, UI_CONFIG } from "./constants";
-import { drawLootItem } from "./lootQueueRenderer";
 
 /**
  * Draws the static grid infrastructure. 
@@ -81,4 +80,23 @@ export function drawHeldItem(
     // Center the item on the mouse
     drawLootItem(ctx, item, mouseX - w / 2, mouseY - h / 2);
     ctx.restore();
+}
+
+export function drawLootItem(
+    ctx: CanvasRenderingContext2D,
+    item: LootItem,
+    pxX: number,
+    pxY: number
+): void {
+    const dims = getEffectiveDimensions(item);
+    const w = gridToPx(dims.width);
+    const h = gridToPx(dims.height);
+
+    ctx.fillStyle = item.color;
+    ctx.fillRect(pxX, pxY, w, h);
+
+    // Add a subtle border to make items pop
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(pxX, pxY, w, h);
 }
