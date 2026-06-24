@@ -1,32 +1,3 @@
-.pocket-grid {
-    display: grid;
-    grid-template-columns: repeat(var(--cols), 30px);
-    grid-template-rows: repeat(var(--rows), 30px);
-    gap: 2px;
-    background-color: #222;
-    padding: 4px;
-    border: 2px solid #444;
-    width: fit-content;
-}
-
-.pocket-grid::before {
-    content: "";
-    grid-column: 1 / -1;
-    grid-row: 1 / -1;
-    background-image:
-        linear-gradient(to right, #333 1px, transparent 1px),
-        linear-gradient(to bottom, #333 1px, transparent 1px);
-    background-size: 32px 32px;
-    /* 30px cell + 2px gap */
-}
-
-.loot-item {
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    margin: 10px;
-    cursor: grab;
-    transition: transform 0.1s;
-}
-
 main {
     display: flex;
     flex-direction: row;
@@ -59,7 +30,6 @@ main {
     align-items: center;
 }
 
-/* style.css */
 .placed-item {
     position: absolute;
     pointer-events: none;
@@ -96,15 +66,16 @@ header {
 
 /* Horizontal stack for the game arena */
 #ui-layout {
-    position: relative;
     display: flex;
     flex-direction: row;
     gap: 30px;
     align-items: flex-start;
-    background-color: #555555;
-    /* Darker background for the "vault" */
+    background-color: #ffffff;
+    /* Darker "vault" feel */
     padding: 20px;
     border-radius: 8px;
+    /* Allow scrolling if the chest is too wide for the screen */
+    overflow-x: auto;
 }
 
 /* Ensure the inventory stack stays relative for its absolute canvases */
@@ -119,6 +90,7 @@ header {
     display: flex;
     flex-direction: row;
     gap: 25px;
+    width: fit-content;
 }
 
 #interaction-canvas {
@@ -128,4 +100,17 @@ header {
     pointer-events: none;
     z-index: 1000;
     /* Ensure it stays above everything else */
+}
+
+canvas {
+    image-rendering: pixelated;
+    display: block;
+    /* Removes weird baseline spacing */
+}
+
+#loot-stack,
+#inventory-stack {
+    background-color: #494848;
+    /* Contrast for the background canvas */
+    border: 1px solid #6d4040;
 }

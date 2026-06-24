@@ -24,10 +24,13 @@
         <main id="ui-layout">
             <!-- Side-by-side logical regions -->
             <div id="game-arena" style="position: relative; display: flex; gap: 25px;">
-                <canvas id="queue-canvas"></canvas>
+                <div id="loot-stack" style="position: relative;">
+                    <canvas id="loot-bg-canvas"></canvas>
+                    <canvas id="loot-fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
+                </div>
                 <div id="inventory-stack" style="position: relative;">
-                    <canvas id="bg-canvas"></canvas>
-                    <canvas id="fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
+                    <canvas id="inv-bg-canvas"></canvas>
+                    <canvas id="inv-fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
                 </div>
 
                 <!-- The Global Overlay: Invisible but captures all movement/ghosting -->

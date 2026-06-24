@@ -1,22 +1,23 @@
-import { EQUIPMENT_CATALOG } from "./catalog.js";
-import { replenishLootQueue } from "./generator.js";
-import { canPlaceItem, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem } from "./inventory.js";
+import { CONTAINER_CATALOG, EQUIPMENT_CATALOG } from "./catalog.js";
+import { fillContainerSpatial, replenishContainerSpatial } from "./generator.js";
+import { canPlaceItem, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem, tryPlaceAnywhere } from "./inventory.js";
 import { loadSettings, saveSettings } from "./settings.js";
-import { GameState } from "./types.js";
+import { GameState, InventoryState, LootGenerationMode } from "./types.js";
 import { screenToGrid, UI_CONFIG } from "./view/constants.js";
 import { drawInventoryBackground, drawInventoryItems } from "./view/inventoryRenderer.js";
 import { drawHeldItem } from "./view/itemRenderer.js";
-import { drawLootQueue, getItemAtPosition } from "./view/lootQueueRenderer.js";
 
 // 1. Canvas Contexts
-const inventoryBgCanvas = document.getElementById("bg-canvas") as HTMLCanvasElement;
-const inventoryFgCanvas = document.getElementById("fg-canvas") as HTMLCanvasElement;
-const queueCanvas = document.getElementById("queue-canvas") as HTMLCanvasElement;
+const inventoryBgCanvas = document.getElementById("inv-bg-canvas") as HTMLCanvasElement;
+const inventoryFgCanvas = document.getElementById("inv-fg-canvas") as HTMLCanvasElement;
+const lootBgCanvas = document.getElementById("loot-bg-canvas") as HTMLCanvasElement;
+const lootFgCanvas = document.getElementById("loot-fg-canvas") as HTMLCanvasElement;
 const interactionCanvas = document.getElementById("interaction-canvas") as HTMLCanvasElement;
 
-const bgCtx = inventoryBgCanvas.getContext("2d")!;
-const fgCtx = inventoryFgCanvas.getContext("2d")!;
-const queueCtx = queueCanvas.getContext("2d")!;
+const invBgCtx = inventoryBgCanvas.getContext("2d")!;
+const invFgCtx = inventoryFgCanvas.getContext("2d")!;
+const lootBgCtx = lootBgCanvas.getContext("2d")!;
+const lootFgCtx = lootFgCanvas.getContext("2d")!;
 const interactionCtx = interactionCanvas.getContext("2d")!;
 
 // 2. Global State
@@ -25,8 +26,9 @@ let lastMouseY = 0;
 
 let gameState: GameState = {
     inventory: initializeInventory(EQUIPMENT_CATALOG.TACTICAL_VEST),
+    lootSource: initializeInventory(CONTAINER_CATALOG.LOOT_CHEST_LARGE),
     heldItem: null,
-    lootQueue: [],
+    heldItemSource: null,
 };
 
 // 3. The Heartbeat (60 FPS)
@@ -37,13 +39,13 @@ function gameLoop() {
 
 function syncUI() {
     // Clear dynamic layers
-    fgCtx.clearRect(0, 0, inventoryFgCanvas.width, inventoryFgCanvas.height);
-    queueCtx.clearRect(0, 0, queueCanvas.width, queueCanvas.height);
+    invFgCtx.clearRect(0, 0, inventoryFgCanvas.width, inventoryFgCanvas.height);
+    lootFgCtx.clearRect(0, 0, lootFgCanvas.width, lootFgCanvas.height);
     interactionCtx.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
 
     // Draw inventory items and queue
-    drawInventoryItems(fgCtx, gameState.inventory);
-    drawLootQueue(queueCtx, gameState.lootQueue);
+    drawInventoryItems(invFgCtx, gameState.inventory);
+    drawInventoryItems(lootFgCtx, gameState.lootSource);
 
     // Draw the "Ghost" item on the global overlay
     if (gameState.heldItem) {
@@ -59,23 +61,39 @@ function syncUI() {
 
 // 4. Mission Logic
 function startMission() {
-    const blueprint = EQUIPMENT_CATALOG[currentSettings.selectedGearKey as keyof typeof EQUIPMENT_CATALOG];
+    const blueprint = EQUIPMENT_CATALOG[currentSettings.selectedGearKey];
 
-    gameState = {
-        ...gameState,
-        inventory: initializeInventory(blueprint),
-        heldItem: null,
-        lootQueue: replenishLootQueue([], initializeInventory(blueprint))
-    };
+    gameState.inventory = initializeInventory(blueprint);
+    gameState.lootSource = initializeInventory(CONTAINER_CATALOG.LOOT_CHEST_LARGE);
+    gameState.heldItem = null;
+
+    if (currentSettings.mode === LootGenerationMode.LARGE_HAUL) {
+        gameState.lootSource = fillContainerSpatial(CONTAINER_CATALOG.LOOT_CHEST_LARGE);
+    } else {
+        const TARGET_COUNT = 20;
+        const currentCount = gameState.lootSource.pockets[0].placedItems.length;
+        if (currentCount < TARGET_COUNT) {
+            for (let i = 0; i < (TARGET_COUNT - currentCount); i++) {
+                gameState.lootSource = replenishContainerSpatial(gameState.lootSource);
+            }
+        }
+    }
 
     refreshCanvasSizes();
-    drawInventoryBackground(bgCtx, gameState.inventory);
+    drawInventoryBackground(invBgCtx, gameState.inventory);
+    drawInventoryBackground(lootBgCtx, gameState.lootSource);
 }
 
 // 5. Interaction Handlers
-function handleInventoryClick(e: MouseEvent) {
+function handleInventoryInteraction(
+    e: MouseEvent,
+    inventory: InventoryState,
+    isLootSource: boolean,
+) {
     const mouse = screenToGrid(e.offsetX, e.offsetY);
-    const pocket = gameState.inventory.pockets.find(p => {
+
+    // Find the pocket under the mouse
+    const pocket = inventory.pockets.find(p => {
         const { x, y } = p.definition.position;
         const { width, height } = p.definition.dimensions;
         return mouse.x >= x && mouse.x < x + width &&
@@ -90,18 +108,22 @@ function handleInventoryClick(e: MouseEvent) {
     };
 
     if (gameState.heldItem) {
-        // Use our new helper to find where the top-left should be
         const origin = getOriginFromCenter(pocketRel.x, pocketRel.y, gameState.heldItem);
         if (canPlaceItem(gameState.heldItem, pocket, origin.x, origin.y)) {
+            if (gameState.heldItemSource === 'LOOT_CHEST' && !isLootSource) {
+                if (currentSettings.mode === LootGenerationMode.REFILL) {
+                    gameState.lootSource = replenishContainerSpatial(gameState.lootSource);
+                }
+            }
+
+            // We modify the pocket passed in (which is a reference within the state)
             pocket.placedItems = [...pocket.placedItems, {
                 item: gameState.heldItem,
-                originX: origin.x, originY: origin.y,
+                originX: origin.x,
+                originY: origin.y,
             }];
             gameState.heldItem = null;
-            gameState.lootQueue = replenishLootQueue(
-                gameState.lootQueue,
-                gameState.inventory,
-            );
+            gameState.heldItemSource = null;
         }
     } else {
         const itemIdx = pocket.placedItems.findIndex(p => {
@@ -112,17 +134,9 @@ function handleInventoryClick(e: MouseEvent) {
 
         if (itemIdx !== -1) {
             gameState.heldItem = pocket.placedItems[itemIdx].item;
+            gameState.heldItemSource = isLootSource ? 'LOOT_CHEST' : 'PLAYER_INVENTORY';
             pocket.placedItems = pocket.placedItems.filter((_, i) => i !== itemIdx);
         }
-    }
-}
-
-function handleQueueClick(e: MouseEvent) {
-    if (gameState.heldItem) return;
-    const idx = getItemAtPosition(gameState.lootQueue, e.offsetX, e.offsetY);
-    if (idx !== -1) {
-        gameState.heldItem = gameState.lootQueue[idx];
-        gameState.lootQueue = gameState.lootQueue.filter((_, i) => i !== idx);
     }
 }
 
@@ -139,13 +153,30 @@ window.addEventListener("wheel", () => {
 window.addEventListener("contextmenu", (e) => {
     if (gameState.heldItem) {
         e.preventDefault();
-        gameState.lootQueue = [...gameState.lootQueue, gameState.heldItem];
+        // Attempt to return to the loot source (the chest)
+        const newState = tryPlaceAnywhere(gameState.lootSource, gameState.heldItem);
+
+        if (newState) {
+            gameState.lootSource = newState;
+            gameState.heldItem = null;
+            gameState.heldItemSource = null;
+        } else {
+            // Optional: Provide feedback if the hoard is truly overflowing
+            console.warn("No room in the chest to return the item!");
+        }
         gameState.heldItem = null;
+        gameState.heldItemSource = null;
     }
 });
 
-inventoryFgCanvas.addEventListener("click", handleInventoryClick);
-queueCanvas.addEventListener("click", handleQueueClick);
+inventoryFgCanvas.addEventListener("click", (e) => {
+    handleInventoryInteraction(e, gameState.inventory, false);
+});
+
+lootFgCanvas.addEventListener("click", (e) => {
+    handleInventoryInteraction(e, gameState.lootSource, true);
+});
+
 document.getElementById("btn-start")?.addEventListener("click", startMission);
 
 // 7. Initialization
@@ -190,25 +221,31 @@ function applySettings() {
 
     // Refresh the visuals
     refreshCanvasSizes();
-    drawInventoryBackground(bgCtx, gameState.inventory);
+    drawInventoryBackground(invBgCtx, gameState.inventory);
 }
 
 function refreshCanvasSizes() {
     const { CELL_SIZE, GAP } = UI_CONFIG;
     // Calculate bounds based on the max x+width and y+height
-    const bounds = getInventoryBounds(gameState.inventory);
+    const invBounds = getInventoryBounds(gameState.inventory);
+    const lootBounds = getInventoryBounds(gameState.lootSource);
 
     // Width and Height should be derived from the actual grid extent
-    const invWidth = bounds.width * (CELL_SIZE + GAP);
-    const invHeight = bounds.height * (CELL_SIZE + GAP);
+    const invWidth = invBounds.width * (CELL_SIZE + GAP);
+    const invHeight = invBounds.height * (CELL_SIZE + GAP);
 
     inventoryBgCanvas.width = invWidth;
     inventoryBgCanvas.height = invHeight;
     inventoryFgCanvas.width = invWidth;
     inventoryFgCanvas.height = invHeight;
 
-    // Match the queue height to the inventory height
-    queueCanvas.height = invHeight;
+    const lootWidth = lootBounds.width * (CELL_SIZE + GAP);
+    const lootHeight = lootBounds.height * (CELL_SIZE + GAP);
+
+    lootBgCanvas.width = lootWidth;
+    lootBgCanvas.height = lootHeight;
+    lootFgCanvas.width = lootWidth;
+    lootFgCanvas.height = lootHeight;
 
     const arenaEl = document.getElementById("game-arena")!;
     interactionCanvas.width = arenaEl.scrollWidth;
@@ -217,7 +254,7 @@ function refreshCanvasSizes() {
 
 window.addEventListener("resize", () => {
     refreshCanvasSizes();
-    drawInventoryBackground(bgCtx, gameState.inventory);
+    drawInventoryBackground(invBgCtx, gameState.inventory);
 });
 
 // Setup initial sizes and start loop

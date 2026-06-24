@@ -49,10 +49,13 @@ export interface LootItem {
     readonly rotated: boolean;
 }
 
+export type ItemSource = 'PLAYER_INVENTORY' | 'LOOT_CHEST';
+
 export interface GameState {
     inventory: InventoryState;
+    lootSource: InventoryState;
     heldItem: LootItem | null;
-    lootQueue: readonly LootItem[];
+    heldItemSource: ItemSource | null;
 }
 
 export interface GameSettings {

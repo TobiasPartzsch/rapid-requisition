@@ -1,4 +1,5 @@
 import { EquipmentDefinition } from "./types";
+import { UI_CONFIG } from "./view/constants";
 
 export const EQUIPMENT_CATALOG: Record<string, EquipmentDefinition> = {
     HIP_BAG: {
@@ -37,4 +38,18 @@ export const EQUIPMENT_CATALOG: Record<string, EquipmentDefinition> = {
             { id: 'mag-4', dimensions: { width: 1, height: 2 }, position: { x: 8, y: 18 } },
         ],
     },
+};
+
+export const CONTAINER_CATALOG: Record<string, EquipmentDefinition> = {
+    LOOT_CHEST_LARGE: {
+        id: "blueprint-loot-chest-large",
+        name: "Overflowing Chest",
+        pockets: [
+            {
+                id: "main-cavity",
+                dimensions: { width: UI_CONFIG.CHEST_WIDTH, height: UI_CONFIG.CHEST_HEIGHT },
+                position: { x: 0, y: 0 }
+            },
+        ]
+    }
 };

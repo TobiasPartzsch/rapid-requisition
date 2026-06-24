@@ -6,6 +6,8 @@ interface GridCoord {
 export const UI_CONFIG = {
     CELL_SIZE: 30,
     GAP: 2,
+    CHEST_WIDTH: 30,
+    CHEST_HEIGHT: 20,
     COLOR_GRID_BG: "#1a1a1a",
     COLOR_GRID_BORDER: "#333333",
     COLOR_POCKET_BORDER: "#d8d1d1",

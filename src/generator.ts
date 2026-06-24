@@ -1,5 +1,5 @@
-import { DEFAULT_QUEUE_SETTINGS, QueueSettings } from "./queue";
-import { InventoryState, LootItem } from "./types";
+import { canPlaceItem, initializeInventory } from "./inventory";
+import { EquipmentDefinition, InventoryState, LootItem } from "./types";
 
 export interface GenerationConstraints {
     readonly maxWidth: number;
@@ -50,19 +50,63 @@ function generateHsl(w: number, h: number): string {
 }
 
 /**
- * Ensures the loot queue meets the minimum item requirement.
+ * Fills a world container (like your 30x20 chest) with as much loot as fits.
+ * Uses a simple "First Fit" greedy approach.
  */
-export function replenishLootQueue(
-    currentQueue: readonly LootItem[],
-    inventory: InventoryState,
-    settings: QueueSettings = DEFAULT_QUEUE_SETTINGS
-): LootItem[] {
-    const itemsNeeded = settings.minItems - currentQueue.length;
-    if (itemsNeeded <= 0) return [...currentQueue];
+export function fillContainerSpatial(blueprint: EquipmentDefinition): InventoryState {
+    let state = initializeInventory(blueprint);
 
-    const newItems = Array.from({ length: itemsNeeded }, () =>
-        generateLootForInventory(inventory)
-    );
+    // We process each pocket in the container
+    const updatedPockets = state.pockets.map(pocket => {
+        let currentPlaced = [...pocket.placedItems];
+        const { width, height } = pocket.definition.dimensions;
 
-    return [...currentQueue, ...newItems];
+        // Iterate through the grid
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                // To keep it from being 100% full, we can add a "spawn chance"
+                if (Math.random() > 0.7) continue;
+
+                const newItem = generateLootForInventory(state);
+
+                // Use your existing collision logic!
+                if (canPlaceItem(newItem, { ...pocket, placedItems: currentPlaced }, x, y)) {
+                    currentPlaced.push({
+                        item: newItem,
+                        originX: x,
+                        originY: y
+                    });
+                }
+            }
+        }
+        return { ...pocket, placedItems: currentPlaced };
+    });
+
+    return { ...state, pockets: updatedPockets };
+}
+
+/**
+ * Attempts to add a single item to a random valid location in the container.
+ */
+export function replenishContainerSpatial(state: InventoryState): InventoryState {
+    const pocket = state.pockets[0]; // Assuming our chest has one main pocket
+    const newItem = generateLootForInventory(state);
+    const { width, height } = pocket.definition.dimensions;
+
+    // We'll try 50 random spots. If it fails, the chest is likely "full enough"
+    for (let i = 0; i < 50; i++) {
+        const x = Math.floor(Math.random() * width);
+        const y = Math.floor(Math.random() * height);
+
+        if (canPlaceItem(newItem, pocket, x, y)) {
+            return {
+                ...state,
+                pockets: [{
+                    ...pocket,
+                    placedItems: [...pocket.placedItems, { item: newItem, originX: x, originY: y }]
+                }]
+            };
+        }
+    }
+    return state; // No room found
 }

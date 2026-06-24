@@ -93,3 +93,28 @@ export function getInventoryBounds(state: InventoryState) {
         height: maxY - minY
     };
 }
+
+/**
+ * Attempts to place a specific item into the first available slot in an inventory.
+ * Returns a new InventoryState if successful, otherwise null.
+ */
+export function tryPlaceAnywhere(inventory: InventoryState, item: LootItem): InventoryState | null {
+    for (const pocket of inventory.pockets) {
+        const { width, height } = pocket.definition.dimensions;
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (canPlaceItem(item, pocket, x, y)) {
+                    // Success! Update the specific pocket's placedItems
+                    const updatedPockets = inventory.pockets.map(p =>
+                        p.definition.id === pocket.definition.id
+                            ? { ...p, placedItems: [...p.placedItems, { item, originX: x, originY: y }] }
+                            : p
+                    );
+                    return { ...inventory, pockets: updatedPockets };
+                }
+            }
+        }
+    }
+    return null;
+}
