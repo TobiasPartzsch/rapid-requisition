@@ -27,7 +27,7 @@ export const EQUIPMENT_CATALOG: Record<string, EquipmentDefinition> = {
             // Left/Right Pouches
             { id: 'side-pouch-l1', dimensions: { width: 2, height: 4 }, position: { x: 0, y: 4 } },
             { id: 'side-pouch-l2', dimensions: { width: 2, height: 4 }, position: { x: 0, y: 9 } },
-            { id: 'side-pouch-r2', dimensions: { width: 2, height: 4 }, position: { x: 12, y: 4 } },
+            { id: 'side-pouch-r1', dimensions: { width: 2, height: 4 }, position: { x: 12, y: 4 } },
             { id: 'side-pouch-r2', dimensions: { width: 2, height: 4 }, position: { x: 12, y: 9 } },
             // Plate Carrier (A bit restrictive)
             { id: 'plate-carrier', dimensions: { width: 6, height: 4 }, position: { x: 4, y: 13 } },
