@@ -18,6 +18,40 @@ export const EQUIPMENT_CATALOG: Record<string, EquipmentDefinition> = {
             { id: "v3", dimensions: { width: 4, height: 6 }, position: { x: 0, y: 3 } },
         ],
     },
+    ASSAULT_PACK: {
+        id: "blueprint-assault-pack",
+        name: "3-Day Assault Pack",
+        pockets: [
+            // A balanced main compartment
+            { id: "main", dimensions: { width: 5, height: 7 }, position: { x: 2, y: 0 } },
+            // Two tall, narrow side channels (perfect for 1xN items)
+            { id: "side-l", dimensions: { width: 2, height: 6 }, position: { x: 0, y: 1 } },
+            { id: "side-r", dimensions: { width: 2, height: 6 }, position: { x: 7, y: 1 } },
+        ]
+    },
+    COURIER_BAG: {
+        id: "blueprint-courier-bag",
+        name: "Messenger Satchel",
+        pockets: [
+            // Wide but short - creates a "Landscape" challenge
+            { id: "main", dimensions: { width: 8, height: 4 }, position: { x: 0, y: 0 } },
+            // Small internal divider
+            { id: "internal", dimensions: { width: 4, height: 1 }, position: { x: 2, y: 5 } },
+        ]
+    },
+    MEDIC_CHEST_RIG: {
+        id: "blueprint-medic-rig",
+        name: "Field Medic Rig",
+        pockets: [
+            // Many small, identical pockets - the "Grid" challenge
+            { id: "p1", dimensions: { width: 2, height: 2 }, position: { x: 0, y: 0 } },
+            { id: "p2", dimensions: { width: 2, height: 2 }, position: { x: 3, y: 0 } },
+            { id: "p3", dimensions: { width: 2, height: 2 }, position: { x: 6, y: 0 } },
+            { id: "p4", dimensions: { width: 2, height: 2 }, position: { x: 0, y: 3 } },
+            { id: "p5", dimensions: { width: 2, height: 2 }, position: { x: 3, y: 3 } },
+            { id: "p6", dimensions: { width: 2, height: 2 }, position: { x: 6, y: 3 } },
+        ]
+    },
     FULL_RAID_KIT: {
         id: 'full-raid-kit',
         name: 'Full Raid Gear',
