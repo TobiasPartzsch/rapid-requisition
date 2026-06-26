@@ -99,13 +99,13 @@ export function getInventoryBounds(state: InventoryState) {
  * Returns a new InventoryState if successful, otherwise null.
  */
 export function tryPlaceAnywhere(inventory: InventoryState, item: LootItem): InventoryState | null {
+    console.log(`Try to fit ${item.size}`)
     for (const pocket of inventory.pockets) {
         const { width, height } = pocket.definition.dimensions;
 
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 if (canPlaceItem(item, pocket, x, y)) {
-                    // Success! Update the specific pocket's placedItems
                     const updatedPockets = inventory.pockets.map(p =>
                         p.definition.id === pocket.definition.id
                             ? { ...p, placedItems: [...p.placedItems, { item, originX: x, originY: y }] }

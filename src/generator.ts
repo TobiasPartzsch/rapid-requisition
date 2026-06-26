@@ -1,4 +1,4 @@
-import { canPlaceItem, initializeInventory } from "./inventory";
+import { canPlaceItem, initializeInventory, rotateItem, tryPlaceAnywhere } from "./inventory";
 import { EquipmentDefinition, InventoryState, LootItem } from "./types";
 
 export interface GenerationConstraints {
@@ -50,39 +50,34 @@ function generateHsl(w: number, h: number): string {
 }
 
 /**
- * Fills a world container (like your 30x20 chest) with as much loot as fits.
- * Uses a simple "First Fit" greedy approach.
+ * Fills a container by repeatedly attempting to "drop" items 
+ * until it becomes too crowded.
  */
 export function fillContainerSpatial(blueprint: EquipmentDefinition): InventoryState {
+    console.log("fill container")
     let state = initializeInventory(blueprint);
+    const MAX_FAILURES = 10;
+    let consecutiveFailures = 0;
 
-    // We process each pocket in the container
-    const updatedPockets = state.pockets.map(pocket => {
-        let currentPlaced = [...pocket.placedItems];
-        const { width, height } = pocket.definition.dimensions;
+    // We keep trying to add items until the "failure hoard" grows too large
+    while (consecutiveFailures < MAX_FAILURES) {
+        let newItem = generateLootForInventory(state);
 
-        // Iterate through the grid
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                // To keep it from being 100% full, we can add a "spawn chance"
-                if (Math.random() > 0.7) continue;
+        let nextState = tryPlaceAnywhere(state, newItem);
 
-                const newItem = generateLootForInventory(state);
-
-                // Use your existing collision logic!
-                if (canPlaceItem(newItem, { ...pocket, placedItems: currentPlaced }, x, y)) {
-                    currentPlaced.push({
-                        item: newItem,
-                        originX: x,
-                        originY: y
-                    });
-                }
-            }
+        if (!nextState) {
+            nextState = tryPlaceAnywhere(state, rotateItem(newItem));
         }
-        return { ...pocket, placedItems: currentPlaced };
-    });
 
-    return { ...state, pockets: updatedPockets };
+        if (nextState) {
+            state = nextState;
+            consecutiveFailures = 0; // Success! Reset the counter
+        } else {
+            consecutiveFailures++; // Increment failure count
+        }
+    }
+
+    return state;
 }
 
 /**

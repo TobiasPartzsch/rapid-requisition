@@ -69,21 +69,19 @@ export interface GameState {
 }
 
 export interface GameSettings {
-    readonly mode: LootGenerationMode;
+    readonly lootMode: LootGenerationMode;
     readonly gameMode: GameMode;
     readonly selectedGearKey: string;
     readonly minQueueItems: number;
-    readonly gridVisible: boolean;
     readonly timeLimitSeconds: number;
     // Add audio/visual toggles and settings as needed
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
-    mode: LootGenerationMode.REFILL,
+    lootMode: LootGenerationMode.REFILL,
     gameMode: GameMode.COUNTDOWN,
     selectedGearKey: "FULL_RAID_KIT",
     minQueueItems: 5,
-    gridVisible: true,
     timeLimitSeconds: 180,
 };
 

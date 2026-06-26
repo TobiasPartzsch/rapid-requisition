@@ -23,6 +23,7 @@ const lootFgCtx = lootFgCanvas.getContext("2d")!;
 const interactionCtx = interactionCanvas.getContext("2d")!;
 
 const timerEl = document.getElementById("timer") as HTMLElement;
+const lootGenerationModeSelect = document.getElementById("select-lootmode") as HTMLSelectElement
 const gameModeSelect = document.getElementById("select-gamemode") as HTMLSelectElement
 const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
 
@@ -102,9 +103,11 @@ function startMission() {
         ? formatTime(currentSettings.timeLimitSeconds * 1000)
         : "00:00";
 
-    if (currentSettings.mode === LootGenerationMode.LARGE_HAUL) {
+    if (currentSettings.lootMode === LootGenerationMode.LARGE_HAUL) {
+        console.log("large haul")
         gameState.lootSource = fillContainerSpatial(CONTAINER_CATALOG.LOOT_CHEST_LARGE);
     } else {
+        console.log("loot queue")
         const TARGET_COUNT = 20;
         const currentCount = gameState.lootSource.pockets[0].placedItems.length;
         if (currentCount < TARGET_COUNT) {
@@ -187,7 +190,7 @@ function handleInventoryInteraction(
         const origin = getOriginFromCenter(pocketRel.x, pocketRel.y, gameState.heldItem);
         if (canPlaceItem(gameState.heldItem, pocket, origin.x, origin.y)) {
             if (gameState.heldItemSource === 'LOOT_CHEST' && !isLootSource) {
-                if (currentSettings.mode === LootGenerationMode.REFILL) {
+                if (currentSettings.lootMode === LootGenerationMode.REFILL) {
                     gameState.lootSource = replenishContainerSpatial(gameState.lootSource);
                 }
             }
@@ -295,13 +298,24 @@ function initSettings() {
 
     // Set initial UI values
     gearSelect.value = currentSettings.selectedGearKey;
-    gameModeSelect.value = currentSettings.mode;
+    gameModeSelect.value = currentSettings.lootMode;
 
     // Listen for changes
     gearSelect.addEventListener("change", () => {
         currentSettings = { ...currentSettings, selectedGearKey: gearSelect.value };
         saveSettings(currentSettings);
         applySettings();
+        if (gameState.startTime) {
+            signalExtraction();
+        }
+    });
+    lootGenerationModeSelect.addEventListener("change", () => {
+        currentSettings = { ...currentSettings, lootMode: lootGenerationModeSelect.value as LootGenerationMode };
+        saveSettings(currentSettings);
+        applySettings();
+        if (gameState.startTime) {
+            signalExtraction();
+        }
     });
     gameModeSelect.addEventListener("change", () => {
         currentSettings = { ...currentSettings, gameMode: gameModeSelect.value as GameMode };
