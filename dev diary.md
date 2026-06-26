@@ -86,3 +86,23 @@ Today's “Wide” Prototype State
 [x] Event-driven replenishment (Refill on drop-in-bag).
 [x] Keyboard-based rotation (R and Space).
 [x] Multi-context canvas clearing (No ghosting).
+
+### Session 5: Extraction Logic and Stochastic Packing
+#### Achievements
+- **Dual-Mode Scoring Engine**: Architected a scoreCalculator that balances volume, time, and density. Implemented two distinct playstyles: TIME_ATTACK (speed-focused) and COUNTDOWN (efficiency-focused).
+- **Stochastic "Fail-Fast" Generation**: Refactored the loot chest filler from a "Greedy Grid" to a "Stochastic Actor" model. The generator now attempts to "shove" items into the chest with 10-failure-threshold logic, resulting in a more natural, hand-packed look.
+- **Unified Score Registry**: Implemented a deep-merged localStorage high-score system. Each leaderboard is dynamically keyed by both ScoringMode and GearID, ensuring a "Hip Bag" run never has to compete with a "Raid Kit" score.
+- **Mission Lifecycle Management**: Integrated a "Signal Extraction" workflow. The engine now tracks startTime and endTime, stopping the clock and calculating a tiered ScoreBreakdown (Base, Time Bonus, Density Multiplier) upon extraction.
+- **Dynamic Inventory Catalog**: Expanded the tactical toolkit with intermediate gear, including the Operator Vest (fragmented pocket challenge) and the Messenger Satchel (landscape-skewed puzzle).
+#### Technical Struggles & Solutions
+- **The "Rotation-Blind" Generator**: Discovered that the generator was giving up too early because it didn't try rotating items. Solved by granting the generator "Actor Agency"—it now attempts both orientations before counting a failure, significantly increasing chest density.
+- **Schema Evolution Protection**: Addressed the risk of "Registry Corruption" when adding new gear. Developed a load-time merge pattern that ensures new EQUIPMENT_CATALOG entries are automatically initialized in the player's existing high-score data.
+- **Context-Switching Errors**: Resolved a TypeError in the scoring logic where the engine was looking for blueprints using the wrong ID mapping. Refactored to use the state's pockets directly, removing the fragile lookup dependency.
+- **The "Zombie Timer" Flicker**: Fixed a UI bug where the timer would briefly display the previous run's time. Synchronized the startTime reset with the DOM text update in the startMission sequence.
+#### Today's “Engineered” Prototype State
+[x] TIME_ATTACK and COUNTDOWN game modes.
+[x] Persistent Top-10 High Score tables for every gear type.
+[x] Live-updating Mission Timer with mode-specific logic.
+[x] "Stochastic" Loot Chest generation (High-density natural packing).
+[x] Mission end-state triggers (Full bag / Empty chest / Time's up).
+[x] Five distinct (para)military equipment blueprints.
