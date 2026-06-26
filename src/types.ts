@@ -51,24 +51,54 @@ export interface LootItem {
 
 export type ItemSource = 'PLAYER_INVENTORY' | 'LOOT_CHEST';
 
+export enum GameMode {
+    COUNTDOWN = 'COUNTDOWN',     // Score based on efficiency/density
+    TIME_ATTACK = 'TIME_ATTACK'  // Score based on speed
+}
+
 export interface GameState {
     inventory: InventoryState;
     lootSource: InventoryState;
     heldItem: LootItem | null;
     heldItemSource: ItemSource | null;
+
+    // Live Session Metrics
+    startTime: number | null;
+    endTime: number | null;
+    itemsStashedCount: number;
 }
 
 export interface GameSettings {
     readonly mode: LootGenerationMode;
+    readonly gameMode: GameMode;
     readonly selectedGearKey: string;
     readonly minQueueItems: number;
     readonly gridVisible: boolean;
+    readonly timeLimitSeconds: number;
     // Add audio/visual toggles and settings as needed
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
     mode: LootGenerationMode.REFILL,
+    gameMode: GameMode.COUNTDOWN,
     selectedGearKey: "FULL_RAID_KIT",
     minQueueItems: 5,
-    gridVisible: true
+    gridVisible: true,
+    timeLimitSeconds: 180,
 };
+
+export interface HighScore {
+    readonly playerName: string;
+    readonly score: number;
+    readonly timestamp: number;
+    readonly gearId: string;
+}
+
+export type ScoreTable = Record<GameMode, readonly HighScore[]>;
+
+export interface ScoreBreakdown {
+    readonly baseScore: number;
+    readonly timeBonus: number;
+    readonly densityBonus: number;
+    readonly total: number;
+}

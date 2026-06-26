@@ -1,8 +1,10 @@
 import { CONTAINER_CATALOG, EQUIPMENT_CATALOG } from "./catalog.js";
 import { fillContainerSpatial, replenishContainerSpatial } from "./generator.js";
 import { canPlaceItem, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem, tryPlaceAnywhere } from "./inventory.js";
+import { calculateScore, countOccupiedCells, countTotalCapacityFromPockets } from "./scoreCalculator.js";
+import { saveScore } from "./scores.js";
 import { loadSettings, saveSettings } from "./settings.js";
-import { GameState, InventoryState, LootGenerationMode } from "./types.js";
+import { GameMode, GameState, InventoryState, LootGenerationMode } from "./types.js";
 import { screenToGrid, UI_CONFIG } from "./view/constants.js";
 import { drawInventoryBackground, drawInventoryItems } from "./view/inventoryRenderer.js";
 import { drawHeldItem } from "./view/itemRenderer.js";
@@ -20,15 +22,22 @@ const lootBgCtx = lootBgCanvas.getContext("2d")!;
 const lootFgCtx = lootFgCanvas.getContext("2d")!;
 const interactionCtx = interactionCanvas.getContext("2d")!;
 
+const timerEl = document.getElementById("timer") as HTMLElement;
+const gameModeSelect = document.getElementById("select-gamemode") as HTMLSelectElement
+const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
+
 // 2. Global State
 let lastMouseX = 0;
 let lastMouseY = 0;
 
 let gameState: GameState = {
-    inventory: initializeInventory(EQUIPMENT_CATALOG.TACTICAL_VEST),
+    inventory: initializeInventory(EQUIPMENT_CATALOG.HIP_BAG),
     lootSource: initializeInventory(CONTAINER_CATALOG.LOOT_CHEST_LARGE),
     heldItem: null,
     heldItemSource: null,
+    startTime: null,
+    endTime: null,
+    itemsStashedCount: 0,
 };
 
 // 3. The Heartbeat (60 FPS)
@@ -57,6 +66,24 @@ function syncUI() {
     } else {
         document.body.style.cursor = "default";
     }
+
+    // Timer update
+    if (!gameState.startTime) {
+        timerEl.textContent = "--:--";
+        return
+    }
+    const mode = currentSettings.gameMode;
+    const elapsedMs = Date.now() - gameState.startTime;
+
+    if (mode === GameMode.COUNTDOWN) {
+        const limitMs = (currentSettings.timeLimitSeconds || 60) * 1000;
+        const remainingMs = Math.max(0, limitMs - elapsedMs);
+        timerEl.textContent = formatTime(remainingMs);
+
+        if (remainingMs <= 0) signalExtraction(); // Time's up!
+    } else {
+        timerEl.textContent = formatTime(elapsedMs);
+    }
 }
 
 // 4. Mission Logic
@@ -66,6 +93,14 @@ function startMission() {
     gameState.inventory = initializeInventory(blueprint);
     gameState.lootSource = initializeInventory(CONTAINER_CATALOG.LOOT_CHEST_LARGE);
     gameState.heldItem = null;
+
+    gameState.startTime = Date.now();
+    gameState.endTime = null;
+    gameState.itemsStashedCount = 0;
+
+    timerEl.textContent = currentSettings.gameMode === GameMode.COUNTDOWN
+        ? formatTime(currentSettings.timeLimitSeconds * 1000)
+        : "00:00";
 
     if (currentSettings.mode === LootGenerationMode.LARGE_HAUL) {
         gameState.lootSource = fillContainerSpatial(CONTAINER_CATALOG.LOOT_CHEST_LARGE);
@@ -82,6 +117,41 @@ function startMission() {
     refreshCanvasSizes();
     drawInventoryBackground(invBgCtx, gameState.inventory);
     drawInventoryBackground(lootBgCtx, gameState.lootSource);
+
+    document.getElementById("btn-start")!.style.display = "none";
+    document.getElementById("btn-extract")!.style.display = "inline-block";
+}
+
+function signalExtraction() {
+    if (!gameState.startTime || gameState.endTime) return;
+
+    gameState.endTime = Date.now();
+    const elapsedSeconds = (gameState.endTime - gameState.startTime) / 1000;
+
+    // Calculate the final score breakdown
+    const scoreBreakdown = calculateScore(
+        currentSettings.gameMode,
+        gameState,
+        elapsedSeconds
+    );
+
+    // Save to High Scores
+    saveScore(currentSettings.gameMode, currentSettings.selectedGearKey, {
+        playerName: "Player 1", // You could add an input for this later!
+        score: scoreBreakdown.total,
+        timestamp: Date.now(),
+        gearId: currentSettings.selectedGearKey,
+        // lootMode: currentSettings.mode
+    });
+
+    // Provide the "Surprise" reveal
+    alert(`Extraction Successful!\nTotal Score: ${scoreBreakdown.total}\nItems Stashed: ${gameState.itemsStashedCount}`);
+
+    // Reset mission state or return to menu
+    gameState.startTime = null;
+
+    document.getElementById("btn-start")!.style.display = "inline-block";
+    document.getElementById("btn-extract")!.style.display = "none";
 }
 
 // 5. Interaction Handlers
@@ -90,7 +160,13 @@ function handleInventoryInteraction(
     inventory: InventoryState,
     isLootSource: boolean,
 ) {
+    if (!gameState.startTime) return;
+
     const mouse = screenToGrid(e.offsetX, e.offsetY);
+
+    if (!isLootSource) {
+        gameState.itemsStashedCount++;
+    }
 
     // Find the pocket under the mouse
     const pocket = inventory.pockets.find(p => {
@@ -136,6 +212,25 @@ function handleInventoryInteraction(
             gameState.heldItem = pocket.placedItems[itemIdx].item;
             gameState.heldItemSource = isLootSource ? 'LOOT_CHEST' : 'PLAYER_INVENTORY';
             pocket.placedItems = pocket.placedItems.filter((_, i) => i !== itemIdx);
+        }
+    }
+
+    checkAutoEndConditions()
+}
+
+function checkAutoEndConditions() {
+    if (!gameState.startTime || gameState.endTime) return;
+
+    const isInventoryFull = countOccupiedCells(gameState.inventory) ===
+        countTotalCapacityFromPockets(gameState.inventory.pockets);
+
+    const isLootExhausted = gameState.lootSource.pockets.every(p => p.placedItems.length === 0);
+
+    // In Time Attack, we end immediately if either happens
+    if (currentSettings.gameMode === GameMode.TIME_ATTACK) {
+        if (isInventoryFull || isLootExhausted) {
+            console.log("Extraction forced: Objectives complete.");
+            signalExtraction();
         }
     }
 }
@@ -187,11 +282,9 @@ lootFgCanvas.addEventListener("click", (e) => {
 });
 
 document.getElementById("btn-start")?.addEventListener("click", startMission);
+document.getElementById("btn-extract")?.addEventListener("click", signalExtraction);
 
 function initSettings() {
-    const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
-    const modeSelect = document.getElementById("select-mode") as HTMLSelectElement;
-
     // Populate Gear Select
     Object.keys(EQUIPMENT_CATALOG).forEach(key => {
         const opt = document.createElement("option");
@@ -202,7 +295,7 @@ function initSettings() {
 
     // Set initial UI values
     gearSelect.value = currentSettings.selectedGearKey;
-    modeSelect.value = currentSettings.mode;
+    gameModeSelect.value = currentSettings.mode;
 
     // Listen for changes
     gearSelect.addEventListener("change", () => {
@@ -210,11 +303,13 @@ function initSettings() {
         saveSettings(currentSettings);
         applySettings();
     });
-
-    modeSelect.addEventListener("change", () => {
-        currentSettings = { ...currentSettings, mode: modeSelect.value as any };
+    gameModeSelect.addEventListener("change", () => {
+        currentSettings = { ...currentSettings, gameMode: gameModeSelect.value as GameMode };
         saveSettings(currentSettings);
         applySettings();
+        if (gameState.startTime) {
+            signalExtraction();
+        }
     });
 }
 
@@ -276,3 +371,15 @@ requestAnimationFrame(() => {
     applySettings();
     gameLoop();
 });
+
+function formatTime(ms: number): string {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    // String.padStart ensures we keep the 00:00 format
+    const mDisplay = minutes.toString().padStart(2, '0');
+    const sDisplay = seconds.toString().padStart(2, '0');
+
+    return `${mDisplay}:${sDisplay}`;
+}

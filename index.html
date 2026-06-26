@@ -18,6 +18,7 @@
             <div id="mission-meta">
                 <span id="timer">00:00</span>
                 <button id="btn-start">Start Mission</button>
+                <button id="btn-extract" style="display: none;">Signal Extraction</button>
             </div>
         </header>
 
@@ -50,9 +51,11 @@
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>
-                        <input type="checkbox" id="check-grid" checked> Show Grid
-                    </label>
+                    <label for="select-gamemode">Game Mode:</label>
+                    <select id="select-gamemode">
+                        <option value="COUNTDOWN">Countdown (Fill it up!)</option>
+                        <option value="TIME_ATTACK">Time Attack (Be fast!)</option>
+                    </select>
                 </div>
             </aside>
         </main>
