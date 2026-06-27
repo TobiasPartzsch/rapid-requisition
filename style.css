@@ -1,122 +1,161 @@
-main {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: flex-start;
-    padding: 20px;
-    gap: 40px;
-    border: 2px dashed #555;
-    /* The Arena Boundary */
-    min-height: auto;
-    /* Ensure it doesn't collapse */
-    background-color: #dddddd;
-    overflow: hidden;
-    /* Keep the ghost from escaping */
+body {
+    background-color: #c8c4b0;
+    background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='4' height='4' fill='%23c8c4b0'/%3E%3Crect x='0' y='0' width='2' height='2' fill='%23bfbb9e' opacity='0.4'/%3E%3C/svg%3E");
+    font-family: 'Courier New', Courier, monospace;
+    color: #e8e0c8;
+    margin: 0;
+    padding: 0;
 }
 
-#loot-queue {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-right: 1px solid #444;
-}
-
-#inventory-view {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.placed-item {
-    position: absolute;
-    pointer-events: none;
-    /* Let clicks pass through to the grid for "lifting" later */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-sizing: border-box;
-}
-
-/* Vertical stack for the whole app */
-#game-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 20px;
-}
-
-#settings-panel {
-    flex: 0 0 250px;
-    /* Don't grow, don't shrink, stay 250px wide */
-    background: #3f3e3e;
-    padding: 20px;
+/* CSS-only approximation with layered radial gradients. It won't be perfect but it reads as camo */
+#game-arena {
+    /* By <a href="https://en.wikipedia.org/wiki/de:User:Pixelfire" class="extiw" title="w:de:User:Pixelfire">pixelFire</a> - <span class="int-own-work" lang="en">Own work</span>, <a href="http://creativecommons.org/licenses/by-sa/3.0/" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=21884">Link</a> */
+    background-image: url('/flecktarn.jpg');
+    background-repeat: repeat;
+    background-size: 512px auto;
     border-radius: 8px;
-}
-
-/* Header with title and timer takes full width at the top */
-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-}
-
-/* Horizontal stack for the game arena */
-#ui-layout {
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-    flex-shrink: 0;
-    /* min-height: 600px; */
+    padding: 20px;
     gap: 30px;
-    align-items: flex-start;
-    background-color: #ffffff;
-    /* Darker "vault" feel */
-    padding: 20px;
-    border-radius: 8px;
-    /* Allow scrolling if the chest is too wide for the screen */
     overflow-x: auto;
 }
 
-/* Ensure the inventory stack stays relative for its absolute canvases */
+#loot-stack {
+    background-color: #1a1a1a;
+    border: 6px solid transparent;
+    border-image: linear-gradient(145deg, #8a8a8a, #c8c8c8, #5a5a5a, #a0a0a0, #3a3a3a) 1;
+    box-shadow:
+        inset 0 0 20px rgba(0, 0, 0, 0.8),
+        0 0 10px rgba(0, 0, 0, 0.6),
+        2px 2px 0 #2a2a2a;
+}
+
 #inventory-stack {
+    background-color: #1e1a12;
+    border: 4px solid #7a6a3a;
+    box-shadow:
+        inset 0 0 15px rgba(0, 0, 0, 0.7),
+        0 0 8px rgba(90, 70, 20, 0.4);
     position: relative;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-    /* Optional: helps see the boundary */
 }
 
-#game-arena {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    gap: 25px;
-    /* width: fit-content; */
-    width: max-content;
+header {
+    background: linear-gradient(135deg, #2a2a1a, #1a1a0a);
+    border: 1px solid #5a5a2a;
+    border-radius: 6px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-#interaction-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    z-index: 1000;
-    /* Ensure it stays above everything else */
+header h1 {
+    font-size: 2rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #c8b060;
+    text-shadow: 0 0 10px rgba(200, 176, 96, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin: 0;
 }
 
-canvas {
-    image-rendering: pixelated;
+#timer {
+    font-size: 1.8rem;
+    font-family: 'Courier New', monospace;
+    color: #40c040;
+    text-shadow: 0 0 8px rgba(64, 192, 64, 0.6);
+    letter-spacing: 0.1em;
+    background: #0a0a0a;
+    padding: 4px 12px;
+    border: 1px solid #2a4a2a;
+    border-radius: 4px;
+}
+
+#btn-start,
+#btn-extract {
+    padding: 8px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+#btn-start {
+    background: linear-gradient(135deg, #3a6a2a, #2a5a1a);
+    color: #c8e0b0;
+    border: 1px solid #5a8a3a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+#btn-start:hover {
+    background: linear-gradient(135deg, #4a8a3a, #3a7a2a);
+    box-shadow: 0 0 10px rgba(90, 160, 60, 0.4);
+}
+
+#btn-extract {
+    background: linear-gradient(135deg, #8a4a1a, #6a2a0a);
+    color: #f0c880;
+    border: 1px solid #b06020;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+#btn-extract:hover {
+    background: linear-gradient(135deg, #aa6a2a, #8a4a1a);
+    box-shadow: 0 0 10px rgba(180, 100, 30, 0.4);
+}
+
+#settings-panel {
+    flex: 0 0 280px;
+    background: linear-gradient(160deg, #2a2820, #1e1c16);
+    border: 1px solid #5a5030;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+#settings-panel h3 {
+    color: #c8b060;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid #5a5030;
+    padding-bottom: 8px;
+    margin-top: 0;
+}
+
+.setting-group {
+    margin-bottom: 16px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border: 1px solid #3a3020;
+}
+
+.setting-group label {
+    color: #a09060;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     display: block;
-    /* Removes weird baseline spacing */
+    margin-bottom: 6px;
 }
 
-#loot-stack,
-#inventory-stack {
-    background-color: #494848;
-    /* Contrast for the background canvas */
-    border: 1px solid #6d4040;
+select {
+    background: #1a1810;
+    color: #c8c0a0;
+    border: 1px solid #5a5030;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    width: 100%;
+    margin-top: 4px;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: #c8b060;
+    box-shadow: 0 0 6px rgba(200, 176, 96, 0.3);
 }
 
 #controls-hint {
@@ -132,4 +171,10 @@ canvas {
 
 #controls-hint strong {
     color: #000000;
+}
+
+.scoring-subgroup {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed #3a3020;
 }

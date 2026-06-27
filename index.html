@@ -25,6 +25,7 @@
         <main id="ui-layout">
             <!-- Side-by-side logical regions -->
             <div id="game-arena" style="position: relative; display: flex; gap: 25px;">
+                <!-- Flecktarn texture: pixelFire, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=21884 -->
                 <div id="loot-stack" style="position: relative;">
                     <canvas id="loot-bg-canvas"></canvas>
                     <canvas id="loot-fg-canvas" style="position: absolute; top:0; left:0;"></canvas>
@@ -41,21 +42,70 @@
 
             <aside id="settings-panel">
                 <h3>Mission Settings</h3>
+
                 <div class="setting-group">
-                    <label>Gear: <select id="select-gear"></select></label>
-                    <br>
-                    <label for="select-lootmode">Loot Mode:</label>
+                    <label for="select-gear">Gear</label>
+                    <select id="select-gear"></select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="select-lootmode">Loot Mode</label>
                     <select id="select-lootmode">
                         <option value="REFILL">Endless Stream (Refill)</option>
                         <option value="LARGE_HAUL">Single Large Haul</option>
                     </select>
                 </div>
+
                 <div class="setting-group">
-                    <label for="select-gamemode">Game Mode:</label>
+                    <label for="select-gamemode">Game Mode</label>
                     <select id="select-gamemode">
-                        <option value="COUNTDOWN">Countdown (Fill it up!)</option>
-                        <option value="TIME_ATTACK">Time Attack (Be fast!)</option>
+                        <option value="COUNTDOWN">Countdown — Fill it up!</option>
+                        <option value="TIME_ATTACK">Time Attack — Be fast!</option>
                     </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="select-cellsize">Grid Cell Size</label>
+                    <select id="select-cellsize">
+                        <option value="32">Small (32px)</option>
+                        <option value="48" selected>Standard (48px)</option>
+                        <option value="64">Large (64px)</option>
+                    </select>
+                </div>
+
+                <!-- Scoring rules: shown/hidden depending on game mode -->
+                <div class="setting-group" id="scoring-options">
+                    <label>Scoring Rules</label>
+
+                    <div id="scoring-countdown" class="scoring-subgroup">
+                        <label for="select-points-per-cell">Points per Cell Filled</label>
+                        <select id="select-points-per-cell">
+                            <option value="1">1 pt</option>
+                            <option value="2">2 pts</option>
+                            <option value="5">5 pts</option>
+                        </select>
+                        <label for="select-bonus-perfect">Perfect Fill Bonus</label>
+                        <select id="select-bonus-perfect">
+                            <option value="0">None</option>
+                            <option value="50">+50 pts</option>
+                            <option value="100">+100 pts</option>
+                        </select>
+                    </div>
+
+                    <div id="scoring-timeattack" class="scoring-subgroup" style="display: none;">
+                        <label for="select-time-bonus">Time Bonus Multiplier</label>
+                        <select id="select-time-bonus">
+                            <option value="1">None (x1)</option>
+                            <option value="2">Fast (x2)</option>
+                            <option value="3">Blitz (x3)</option>
+                        </select>
+                        <label for="select-penalty-rotate">Rotation Penalty</label>
+                        <select id="select-penalty-rotate">
+                            <option value="0">None</option>
+                            <option value="1">-1s per rotate</option>
+                            <option value="2">-2s per rotate</option>
+                        </select>
+                    </div>
                 </div>
             </aside>
         </main>
