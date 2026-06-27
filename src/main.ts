@@ -298,7 +298,7 @@ function initSettings() {
 
     // Set initial UI values
     gearSelect.value = currentSettings.selectedGearKey;
-    gameModeSelect.value = currentSettings.lootMode;
+    gameModeSelect.value = currentSettings.gameMode;
 
     // Listen for changes
     gearSelect.addEventListener("change", () => {
