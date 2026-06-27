@@ -105,14 +105,20 @@ function startMission() {
 
     if (currentSettings.lootMode === LootGenerationMode.LARGE_HAUL) {
         console.log("large haul")
-        gameState.lootSource = fillContainerSpatial(CONTAINER_CATALOG.LOOT_CHEST_LARGE);
+        gameState.lootSource = fillContainerSpatial(
+            CONTAINER_CATALOG.LOOT_CHEST_LARGE,
+            gameState.inventory
+        );
     } else {
         console.log("loot queue")
         const TARGET_COUNT = 20;
         const currentCount = gameState.lootSource.pockets[0].placedItems.length;
         if (currentCount < TARGET_COUNT) {
             for (let i = 0; i < (TARGET_COUNT - currentCount); i++) {
-                gameState.lootSource = replenishContainerSpatial(gameState.lootSource);
+                gameState.lootSource = replenishContainerSpatial(
+                    gameState.lootSource,
+                    gameState.inventory
+                );
             }
         }
     }
@@ -191,7 +197,10 @@ function handleInventoryInteraction(
         if (canPlaceItem(gameState.heldItem, pocket, origin.x, origin.y)) {
             if (gameState.heldItemSource === 'LOOT_CHEST' && !isLootSource) {
                 if (currentSettings.lootMode === LootGenerationMode.REFILL) {
-                    gameState.lootSource = replenishContainerSpatial(gameState.lootSource);
+                    gameState.lootSource = replenishContainerSpatial(
+                        gameState.lootSource,
+                        gameState.inventory
+                    );
                 }
             }
 
