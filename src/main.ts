@@ -269,8 +269,10 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("contextmenu", (e) => {
     if (gameState.heldItem) {
         e.preventDefault();
-        // Attempt to return to the loot source (the chest)
-        const newState = tryPlaceAnywhere(gameState.lootSource, gameState.heldItem);
+        // Attempt to return to the loot source (the chest), also try the rotated version
+        const newState =
+            tryPlaceAnywhere(gameState.lootSource, gameState.heldItem) ??
+            tryPlaceAnywhere(gameState.lootSource, rotateItem(gameState.heldItem));
 
         if (newState) {
             gameState.lootSource = newState;
