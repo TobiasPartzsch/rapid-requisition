@@ -1,10 +1,22 @@
 import { Dimensions, EquipmentDefinition, InventoryState, ItemPlacement, LootItem, PocketState } from "./types";
 
+const SNAP_CANDIDATES: ReadonlyArray<{ dx: number; dy: number }> = [
+    { dx: 0, dy: 0 }, // exact position first
+    { dx: -1, dy: 0 },
+    { dx: 1, dy: 0 },
+    { dx: 0, dy: -1 },
+    { dx: 0, dy: 1 },
+    { dx: -1, dy: -1 },
+    { dx: 1, dy: -1 },
+    { dx: -1, dy: 1 },
+    { dx: 1, dy: 1 },
+] as const;
+
 export function canPlaceItem(
     item: LootItem,
     pocket: PocketState,
     x: number,
-    y: number
+    y: number,
 ): boolean {
     const dims = getEffectiveDimensions(item);
 
@@ -114,6 +126,20 @@ export function tryPlaceAnywhere(inventory: InventoryState, item: LootItem): Inv
                     return { ...inventory, pockets: updatedPockets };
                 }
             }
+        }
+    }
+    return null;
+}
+
+export function findSnapOrigin(
+    item: LootItem,
+    pocket: PocketState,
+    baseOrigin: { x: number; y: number }
+): { x: number; y: number } | null {
+    for (const { dx, dy } of SNAP_CANDIDATES) {
+        const candidate = { x: baseOrigin.x + dx, y: baseOrigin.y + dy };
+        if (canPlaceItem(item, pocket, candidate.x, candidate.y)) {
+            return candidate;
         }
     }
     return null;

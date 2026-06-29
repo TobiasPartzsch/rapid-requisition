@@ -1,6 +1,6 @@
 import { CONTAINER_CATALOG, EQUIPMENT_CATALOG } from "./catalog.js";
 import { fillContainerSpatial, replenishContainerSpatial } from "./generator.js";
-import { canPlaceItem, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem, tryPlaceAnywhere } from "./inventory.js";
+import { findSnapOrigin, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem, tryPlaceAnywhere } from "./inventory.js";
 import { calculateScore, countOccupiedCells, countTotalCapacityFromPockets } from "./scoreCalculator.js";
 import { saveScore } from "./scores.js";
 import { loadSettings, saveSettings } from "./settings.js";
@@ -193,8 +193,9 @@ function handleInventoryInteraction(
     };
 
     if (gameState.heldItem) {
-        const origin = getOriginFromCenter(pocketRel.x, pocketRel.y, gameState.heldItem);
-        if (canPlaceItem(gameState.heldItem, pocket, origin.x, origin.y)) {
+        const baseOrigin = getOriginFromCenter(pocketRel.x, pocketRel.y, gameState.heldItem);
+        const origin = findSnapOrigin(gameState.heldItem, pocket, baseOrigin);
+        if (origin) {
             if (gameState.heldItemSource === 'LOOT_CHEST' && !isLootSource) {
                 if (currentSettings.lootMode === LootGenerationMode.REFILL) {
                     gameState.lootSource = replenishContainerSpatial(
