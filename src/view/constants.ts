@@ -9,7 +9,7 @@ export const UI_CONFIG = {
     CHEST_WIDTH: 30,
     CHEST_HEIGHT: 20,
     COLOR_GRID_BG: "#1a1a1a",
-    COLOR_GRID_BORDER: "#333333",
+    COLOR_GRID_BORDER: "#4d4d4d",
     COLOR_POCKET_BORDER: "#d8d1d1",
     QUEUE_PADDING: 10,
 } as const;

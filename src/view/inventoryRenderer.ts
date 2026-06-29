@@ -26,6 +26,9 @@ export function drawInventoryBackground(
 
                 ctx.fillStyle = COLOR_GRID_BG;
                 ctx.fillRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
+                ctx.strokeStyle = UI_CONFIG.COLOR_GRID_BORDER;
+                ctx.lineWidth = 0.2;
+                ctx.strokeRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
             }
         }
         const borderX = offset.x * (CELL_SIZE + GAP) - 1;
