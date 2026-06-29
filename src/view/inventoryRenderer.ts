@@ -31,8 +31,8 @@ export function drawInventoryBackground(
                 ctx.strokeRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
             }
         }
-        const borderX = offset.x * (CELL_SIZE + GAP) - 1;
-        const borderY = offset.y * (CELL_SIZE + GAP) - 1;
+        const borderX = offset.x * (CELL_SIZE + GAP);
+        const borderY = offset.y * (CELL_SIZE + GAP);
         const borderWidth = width * (CELL_SIZE + GAP) - GAP + 2;
         const borderHeight = height * (CELL_SIZE + GAP) - GAP + 2;
 
