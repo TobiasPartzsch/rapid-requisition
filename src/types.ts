@@ -68,13 +68,25 @@ export interface GameState {
     itemsStashedCount: number;
 }
 
+export interface CountdownScoringSettings {
+    readonly pointsPerCell: number;
+    readonly perfectFillBonus: number;
+}
+
+export interface TimeAttackScoringSettings {
+    readonly timeBonusMultiplier: number;
+    readonly rotationPenaltySeconds: number;
+}
+
 export interface GameSettings {
     readonly lootMode: LootGenerationMode;
     readonly gameMode: GameMode;
     readonly selectedGearKey: string;
     readonly minQueueItems: number;
     readonly timeLimitSeconds: number;
-    // Add audio/visual toggles and settings as needed
+    readonly cellSize: number;
+    readonly countdownScoring: CountdownScoringSettings;
+    readonly timeAttackScoring: TimeAttackScoringSettings;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -83,6 +95,15 @@ export const DEFAULT_SETTINGS: GameSettings = {
     selectedGearKey: "FULL_RAID_KIT",
     minQueueItems: 5,
     timeLimitSeconds: 180,
+    cellSize: 48,
+    countdownScoring: {
+        pointsPerCell: 1,
+        perfectFillBonus: 0,
+    },
+    timeAttackScoring: {
+        timeBonusMultiplier: 1,
+        rotationPenaltySeconds: 0,
+    },
 };
 
 export interface HighScore {
