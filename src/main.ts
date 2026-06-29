@@ -239,12 +239,9 @@ function checkAutoEndConditions() {
 
     const isLootExhausted = gameState.lootSource.pockets.every(p => p.placedItems.length === 0);
 
-    // In Time Attack, we end immediately if either happens
-    if (currentSettings.gameMode === GameMode.TIME_ATTACK) {
-        if (isInventoryFull || isLootExhausted) {
-            console.log("Extraction forced: Objectives complete.");
-            signalExtraction();
-        }
+    if (isInventoryFull || isLootExhausted) {
+        console.log("Extraction forced: Objectives complete.");
+        signalExtraction();
     }
 }
 
