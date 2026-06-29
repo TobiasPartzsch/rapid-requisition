@@ -106,3 +106,51 @@ Today's “Wide” Prototype State
 [x] "Stochastic" Loot Chest generation (High-density natural packing).
 [x] Mission end-state triggers (Full bag / Empty chest / Time's up).
 [x] Five distinct (para)military equipment blueprints.
+
+### Session 6: Visual Overhaul and Generation Hardening
+#### Achievements
+- **Tactical Aesthetic**: Replaced placeholder styling with a full military theme. Soft warm neutral body background, Bundeswehr Flecktarn tiling texture for the game arena, metallic gradient border for the loot chest, and khaki border with dark interior for the player inventory.
+- **Pronounced Mission HUD**: Redesigned the header with a dark gradient background, gold stencil title, green monospace timer with glow effect, and styled Start/Extract buttons with hover transitions.
+- **Settings Panel Rework**: Restyled the settings panel with a dark tactical theme and grouped setting sections. Extended with grid cell size selector and per-game-mode scoring rule options (points per cell, perfect fill bonus, time multiplier, rotation penalty).
+- **Asset Attribution**: Added mixed-license documentation to README, distinguishing MIT (code) from CC BY-SA 3.0 (Flecktarn texture, pixelFire via Wikimedia Commons).
+
+#### Technical Struggles & Solutions
+- **Flecktarn CSS Approximation**: Attempted a pure CSS radial-gradient camo pattern -- visually unconvincing. Replaced with a tiling raster texture served from Vite's `public/` directory.
+- **Vite Public Asset 404**: Texture served a 404 despite correct file placement. Root cause was a missing explicit `publicDir` declaration in `vite.config.ts`. Adding it resolved the issue.
+- **Oversized Loot Generation**: Items were being generated up to 30×20 cells. Root cause: `fillContainerSpatial` passed the loot chest inventory as the generation constraint source instead of the player inventory. Refactored generator to accept a separate `constraintSource: InventoryState`, ensuring items are always bounded by the largest player pocket dimensions.
+- **Settings Initialisation Bug**: Game mode dropdown was not pre-selected on startup due to a copy-paste error assigning `currentSettings.lootMode` to `gameModeSelect.value`. Fixed alongside a missing initialisation of the loot mode select.
+- **Return-to-Chest Rotation**: Items returned via right-click were failing to place if the chest was nearly full. Extended the cancel handler to attempt the rotated orientation via `??` chaining, consistent with the existing generator pattern.
+
+#### Today's "Engineered" Prototype State
+[x] Full military visual theme with tiling Flecktarn texture.
+[x] Styled HUD with mode-aware timer, tactical buttons, and settings panel.
+[x] Loot generation correctly constrained to player inventory pocket dimensions.
+[x] All settings dropdowns correctly initialised from saved state on load.
+[x] Rotation fallback on item return to loot chest.
+
+### Session 6: Settings Architecture and UI Wiring
+#### Achievements
+- **Dynamic Cell Size**: Migrated CELL_SIZE from a module constant to a
+  GameSettings parameter, threading it through the render pipeline.
+- **Per-Mode Scoring Settings**: Replaced hardcoded scoring values with
+  structured countdownScoring and timeAttackScoring objects in GameSettings.
+- **Snap Assist**: Implemented a 1-cell radius grid search in findSnapOrigin
+  for forgiving item placement.
+- **Scoring UI**: Wired dropdown selects to scoring settings with proper
+  parseInt handling on read.
+
+#### Technical Struggles & Solutions
+- **NaN in Score Calculations**: select.value returns strings; resolved by
+  applying parseInt() at the read site.
+- **Stale localStorage**: Old settings schema caused dropdowns to show nothing
+  selected. Identified version mismatch as root cause; localStorage.clear()
+  restores defaults. Schema versioning noted as future hardening task.
+- **HTML Nesting Bugs**: Corrected improper aside/main nesting that was
+  breaking layout.
+
+#### Prototype State
+[x] All Session 5 items
+[x] Configurable cell size via settings
+[x] Per-mode scoring rules (points/cell, time bonus, completion bonus)
+[x] Snap assist for item placement
+[x] Scoring settings UI with persistent localStorage storage
