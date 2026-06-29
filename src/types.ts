@@ -95,7 +95,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
     selectedGearKey: "FULL_RAID_KIT",
     minQueueItems: 5,
     timeLimitSeconds: 180,
-    cellSize: 48,
+    cellSize: 30,
     countdownScoring: {
         pointsPerCell: 1,
         perfectFillBonus: 0,
