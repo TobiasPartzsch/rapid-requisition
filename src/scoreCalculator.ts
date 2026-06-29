@@ -1,35 +1,37 @@
 import { SCORES_KEY, ScoreRegistry, getInitialRegistry } from "./scores";
-import { GameMode, GameState, InventoryState, PocketState, ScoreBreakdown } from "./types";
-
-const POINTS_PER_CELL = 10;
-const DENSITY_MULTIPLIER = 1000;
-const TIME_PENALTY_PER_SECOND = 5;
+import { CountdownScoringSettings, GameMode, GameState, InventoryState, PocketState, ScoreBreakdown, TimeAttackScoringSettings } from "./types";
 
 export function calculateScore(
     mode: GameMode,
     state: GameState,
     elapsedSeconds: number,
-    timeLimit?: number,
+    countdownScoring: CountdownScoringSettings,
+    timeAttackScoring: TimeAttackScoringSettings,
+    timeLimitSeconds: number,
 ): ScoreBreakdown {
     const occupiedCells = countOccupiedCells(state.inventory);
     const totalCapacity = countTotalCapacityFromPockets(state.inventory.pockets);
-    const densityRatio = totalCapacity > 0 ? occupiedCells / totalCapacity : 0;
+    const isFullClear = occupiedCells === totalCapacity;
 
-    let baseScore = occupiedCells * POINTS_PER_CELL;
-    let timeBonus = 0;
+    let baseScore = 0;
+    let completionBonus = 0;
 
-    if (mode === GameMode.TIME_ATTACK) {
-        // Time Attack: Penalty for every second spent
-        timeBonus = -(elapsedSeconds * TIME_PENALTY_PER_SECOND);
-    } else if (mode === GameMode.COUNTDOWN && timeLimit) {
-        // Countdown: Bonus for remaining time if inventory is full
-        const remaining = Math.max(0, timeLimit - elapsedSeconds);
-        timeBonus = remaining * 10;
+    if (mode === GameMode.COUNTDOWN) {
+        baseScore = occupiedCells * countdownScoring.pointsPerCell;
+        if (isFullClear) {
+            console.log(timeLimitSeconds, elapsedSeconds, countdownScoring.timeBonusPerSecond)
+            completionBonus = (timeLimitSeconds - elapsedSeconds)
+                * countdownScoring.timeBonusPerSecond;
+        }
+    } else {
+        baseScore = occupiedCells * timeAttackScoring.pointsPerCell;
+        if (isFullClear) {
+            completionBonus = timeAttackScoring.completionBonus;
+        }
     }
 
-    const total = Math.max(0, baseScore + timeBonus + Math.floor(densityRatio * DENSITY_MULTIPLIER));
-
-    return { baseScore, timeBonus, densityBonus: Math.floor(densityRatio * DENSITY_MULTIPLIER), total };
+    const total = Math.max(0, baseScore + completionBonus);
+    return { baseScore, completionBonus, total };
 }
 
 export function loadScores(): ScoreRegistry {

@@ -78,41 +78,42 @@
                     <label>Scoring Rules</label>
 
                     <div id="scoring-countdown" class="scoring-subgroup">
-                        <label for="select-points-per-cell">Points per Cell Filled</label>
-                        <select id="select-points-per-cell">
-                            <option value="1">1 pt</option>
+                        <label for="select-countdown-points-per-cell">Points per Cell Filled</label>
+                        <select id="select-countdown-points-per-cell">
+                            <option value="1" selected>1 pt</option>
                             <option value="2">2 pts</option>
                             <option value="5">5 pts</option>
                         </select>
-                        <label for="select-bonus-perfect">Perfect Fill Bonus</label>
-                        <select id="select-bonus-perfect">
+                        <label for="select-time-bonus-per-second">Time Bonus per Second Remaining</label>
+                        <select id="select-time-bonus-per-second">
                             <option value="0">None</option>
-                            <option value="50">+50 pts</option>
-                            <option value="100">+100 pts</option>
+                            <option value="10" selected>10 pts/s</option>
+                            <option value="25">25 pts/s</option>
                         </select>
                     </div>
 
                     <div id="scoring-timeattack" class="scoring-subgroup" style="display: none;">
-                        <label for="select-time-bonus">Time Bonus Multiplier</label>
-                        <select id="select-time-bonus">
-                            <option value="1">None (x1)</option>
-                            <option value="2">Fast (x2)</option>
-                            <option value="3">Blitz (x3)</option>
+                        <label for="select-timeattack-points-per-cell">Points per Cell Filled</label>
+                        <select id="select-timeattack-points-per-cell">
+                            <option value="1" selected>1 pt</option>
+                            <option value="2">2 pts</option>
+                            <option value="5">5 pts</option>
                         </select>
-                        <label for="select-penalty-rotate">Rotation Penalty</label>
-                        <select id="select-penalty-rotate">
+                        <label for="select-completion-bonus">Completion Bonus</label>
+                        <select id="select-completion-bonus">
                             <option value="0">None</option>
-                            <option value="1">-1s per rotate</option>
-                            <option value="2">-2s per rotate</option>
+                            <option value="100" selected>+100 pts</option>
+                            <option value="250">+250 pts</option>
                         </select>
                     </div>
                 </div>
             </aside>
         </main>
-        <footer id="controls-hint">
-            <p><strong>Controls:</strong> Left Click (Pick/Drop) | Right Click (Cancel/Return) | Mousewheel, [R],
-                [Space] (Rotate)</p>
-        </footer>
+    </div>
+    <footer id="controls-hint">
+        <p><strong>Controls:</strong> Left Click (Pick/Drop) | Right Click (Cancel/Return) | Mousewheel, [R],
+            [Space] (Rotate)</p>
+    </footer>
     </div>
     <script type="module" src="src/main.ts"></script>
 </body>

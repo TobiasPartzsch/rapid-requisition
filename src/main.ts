@@ -26,6 +26,10 @@ const timerEl = document.getElementById("timer") as HTMLElement;
 const lootGenerationModeSelect = document.getElementById("select-lootmode") as HTMLSelectElement
 const gameModeSelect = document.getElementById("select-gamemode") as HTMLSelectElement
 const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
+const countdownPointsSelect = document.getElementById("select-countdown-points-per-cell") as HTMLSelectElement;
+const timeBonusPerSecondSelect = document.getElementById("select-time-bonus-per-second") as HTMLSelectElement;
+const timeAttackPointsSelect = document.getElementById("select-timeattack-points-per-cell") as HTMLSelectElement;
+const completionBonusSelect = document.getElementById("select-completion-bonus") as HTMLSelectElement;
 const cellSizeSelect = document.getElementById("select-cellsize") as HTMLSelectElement;
 
 // 2. Global State
@@ -64,7 +68,7 @@ function syncUI() {
         const rect = interactionCanvas.getBoundingClientRect();
         const canvasX = lastMouseX - rect.left;
         const canvasY = lastMouseY - rect.top;
-        drawHeldItem(interactionCtx, gameState.heldItem, canvasX, canvasY);
+        drawHeldItem(interactionCtx, gameState.heldItem, canvasX, canvasY, cellSize);
         document.body.style.cursor = "none";
     } else {
         document.body.style.cursor = "default";
@@ -106,13 +110,11 @@ function startMission() {
         : "00:00";
 
     if (currentSettings.lootMode === LootGenerationMode.LARGE_HAUL) {
-        console.log("large haul")
         gameState.lootSource = fillContainerSpatial(
             CONTAINER_CATALOG.LOOT_CHEST_LARGE,
             gameState.inventory
         );
     } else {
-        console.log("loot queue")
         const TARGET_COUNT = 20;
         const currentCount = gameState.lootSource.pockets[0].placedItems.length;
         if (currentCount < TARGET_COUNT) {
@@ -144,7 +146,10 @@ function signalExtraction() {
     const scoreBreakdown = calculateScore(
         currentSettings.gameMode,
         gameState,
-        elapsedSeconds
+        elapsedSeconds,
+        currentSettings.countdownScoring,
+        currentSettings.timeAttackScoring,
+        currentSettings.timeLimitSeconds,
     );
 
     // Save to High Scores
@@ -312,7 +317,12 @@ function initSettings() {
     gearSelect.value = currentSettings.selectedGearKey;
     gameModeSelect.value = currentSettings.gameMode;
     lootGenerationModeSelect.value = currentSettings.lootMode;
-    console.log(currentSettings.cellSize)
+    countdownPointsSelect.value = currentSettings.countdownScoring.pointsPerCell.toString();
+    timeBonusPerSecondSelect.value = currentSettings.countdownScoring.timeBonusPerSecond.toString();
+    timeAttackPointsSelect.value = currentSettings.timeAttackScoring.pointsPerCell.toString();
+    completionBonusSelect.value = currentSettings.timeAttackScoring.completionBonus.toString();
+
+    updateScoringVisibility(currentSettings.gameMode)
 
     // Listen for changes
     gearSelect.addEventListener("change", () => {
@@ -338,6 +348,51 @@ function initSettings() {
         if (gameState.startTime) {
             signalExtraction();
         }
+        updateScoringVisibility(currentSettings.gameMode)
+    });
+    countdownPointsSelect.addEventListener("change", () => {
+        currentSettings = {
+            ...currentSettings,
+            countdownScoring: {
+                ...currentSettings.countdownScoring,
+                pointsPerCell: parseInt(countdownPointsSelect.value)
+            }
+        };
+        saveSettings(currentSettings);
+        if (gameState.startTime) signalExtraction();
+    });
+    timeBonusPerSecondSelect.addEventListener("change", () => {
+        currentSettings = {
+            ...currentSettings,
+            countdownScoring: {
+                ...currentSettings.countdownScoring,
+                timeBonusPerSecond: parseInt(timeBonusPerSecondSelect.value)
+            }
+        };
+        saveSettings(currentSettings);
+        if (gameState.startTime) signalExtraction();
+    });
+    timeAttackPointsSelect.addEventListener("change", () => {
+        currentSettings = {
+            ...currentSettings,
+            timeAttackScoring: {
+                ...currentSettings.timeAttackScoring,
+                pointsPerCell: parseInt(timeAttackPointsSelect.value)
+            }
+        };
+        saveSettings(currentSettings);
+        if (gameState.startTime) signalExtraction();
+    });
+    completionBonusSelect.addEventListener("change", () => {
+        currentSettings = {
+            ...currentSettings,
+            timeAttackScoring: {
+                ...currentSettings.timeAttackScoring,
+                completionBonus: parseInt(completionBonusSelect.value)
+            }
+        };
+        saveSettings(currentSettings);
+        if (gameState.startTime) signalExtraction();
     });
 
     cellSizeSelect.value = currentSettings.cellSize.toString();
@@ -420,4 +475,11 @@ function formatTime(ms: number): string {
     const sDisplay = seconds.toString().padStart(2, '0');
 
     return `${mDisplay}:${sDisplay}`;
+}
+
+function updateScoringVisibility(mode: GameMode) {
+    const countdownEl = document.getElementById("scoring-countdown")!;
+    const timeAttackEl = document.getElementById("scoring-timeattack")!;
+    countdownEl.style.display = mode === GameMode.COUNTDOWN ? "block" : "none";
+    timeAttackEl.style.display = mode === GameMode.TIME_ATTACK ? "block" : "none";
 }

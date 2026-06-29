@@ -70,12 +70,18 @@ export interface GameState {
 
 export interface CountdownScoringSettings {
     readonly pointsPerCell: number;
-    readonly perfectFillBonus: number;
+    readonly timeBonusPerSecond: number;
 }
 
 export interface TimeAttackScoringSettings {
-    readonly timeBonusMultiplier: number;
-    readonly rotationPenaltySeconds: number;
+    readonly pointsPerCell: number;
+    readonly completionBonus: number;
+}
+
+export interface ScoreBreakdown {
+    readonly baseScore: number;
+    readonly completionBonus: number;
+    readonly total: number;
 }
 
 export interface GameSettings {
@@ -98,11 +104,11 @@ export const DEFAULT_SETTINGS: GameSettings = {
     cellSize: 30,
     countdownScoring: {
         pointsPerCell: 1,
-        perfectFillBonus: 0,
+        timeBonusPerSecond: 10,
     },
     timeAttackScoring: {
-        timeBonusMultiplier: 1,
-        rotationPenaltySeconds: 0,
+        pointsPerCell: 1,
+        completionBonus: 100,
     },
 };
 
@@ -114,10 +120,3 @@ export interface HighScore {
 }
 
 export type ScoreTable = Record<GameMode, readonly HighScore[]>;
-
-export interface ScoreBreakdown {
-    readonly baseScore: number;
-    readonly timeBonus: number;
-    readonly densityBonus: number;
-    readonly total: number;
-}
