@@ -6,11 +6,12 @@ export function drawLootItem(
     ctx: CanvasRenderingContext2D,
     item: LootItem,
     pxX: number,
-    pxY: number
+    pxY: number,
+    cellSize: number,
 ): void {
     const dims = getEffectiveDimensions(item);
-    const w = gridToPx(dims.width);
-    const h = gridToPx(dims.height);
+    const w = gridToPx(dims.width, cellSize);
+    const h = gridToPx(dims.height, cellSize);
 
     ctx.fillStyle = item.color;
     ctx.fillRect(pxX, pxY, w, h);
@@ -27,14 +28,15 @@ export function drawHeldItem(
     ctx: CanvasRenderingContext2D,
     item: LootItem,
     pxX: number,
-    pxY: number
+    pxY: number,
+    cellSize: number,
 ): void {
     const dims = getEffectiveDimensions(item);
-    const w = gridToPx(dims.width);
-    const h = gridToPx(dims.height);
+    const w = gridToPx(dims.width, cellSize);
+    const h = gridToPx(dims.height, cellSize);
 
     ctx.save();
     ctx.globalAlpha = 0.6; // Make it ethereal
-    drawLootItem(ctx, item, pxX - w / 2, pxY - h / 2);
+    drawLootItem(ctx, item, pxX - w / 2, pxY - h / 2, cellSize);
     ctx.restore();
 }
