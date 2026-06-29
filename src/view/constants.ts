@@ -4,7 +4,6 @@ interface GridCoord {
 }
 
 export const UI_CONFIG = {
-    CELL_SIZE: 30,
     GAP: 2,
     CHEST_WIDTH: 30,
     CHEST_HEIGHT: 20,
@@ -22,15 +21,15 @@ export const VIEW_REGIONS = {
 /** 
  * Helper to calculate pixel dimensions based on grid units 
  */
-export function gridToPx(units: number): number {
-    return (units * UI_CONFIG.CELL_SIZE) + (units - 1) * UI_CONFIG.GAP;
+export function gridToPx(units: number, cellSize: number): number {
+    return (units * cellSize) + (units - 1) * UI_CONFIG.GAP;
 }
 
 /**
  * Translates a mouse pixel offset into a discrete grid coordinate.
  */
-export function screenToGrid(offsetX: number, offsetY: number): GridCoord {
-    const x = Math.floor(offsetX / (UI_CONFIG.CELL_SIZE + UI_CONFIG.GAP));
-    const y = Math.floor(offsetY / (UI_CONFIG.CELL_SIZE + UI_CONFIG.GAP));
+export function screenToGrid(offsetX: number, offsetY: number, cellSize: number): GridCoord {
+    const x = Math.floor(offsetX / (cellSize + UI_CONFIG.GAP));
+    const y = Math.floor(offsetY / (cellSize + UI_CONFIG.GAP));
     return { x, y };
 }

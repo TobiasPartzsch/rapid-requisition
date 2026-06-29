@@ -8,9 +8,10 @@ import { gridToPx, UI_CONFIG } from "./constants";
  */
 export function drawInventoryBackground(
     ctx: CanvasRenderingContext2D,
-    state: InventoryState
+    state: InventoryState,
+    cellSize: number,
 ): void {
-    const { CELL_SIZE, GAP, COLOR_GRID_BG } = UI_CONFIG;
+    const { GAP, COLOR_GRID_BG } = UI_CONFIG;
 
     // Clear the background first
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -21,20 +22,20 @@ export function drawInventoryBackground(
 
         for (let x = 0; x < width; x++) {
             for (let y = 0; y < height; y++) {
-                const pxX = (offset.x + x) * (CELL_SIZE + GAP);
-                const pxY = (offset.y + y) * (CELL_SIZE + GAP);
+                const pxX = (offset.x + x) * (cellSize + GAP);
+                const pxY = (offset.y + y) * (cellSize + GAP);
 
                 ctx.fillStyle = COLOR_GRID_BG;
-                ctx.fillRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
+                ctx.fillRect(pxX, pxY, cellSize, cellSize);
                 ctx.strokeStyle = UI_CONFIG.COLOR_GRID_BORDER;
                 ctx.lineWidth = 0.2;
-                ctx.strokeRect(pxX, pxY, CELL_SIZE, CELL_SIZE);
+                ctx.strokeRect(pxX, pxY, cellSize, cellSize);
             }
         }
-        const borderX = offset.x * (CELL_SIZE + GAP);
-        const borderY = offset.y * (CELL_SIZE + GAP);
-        const borderWidth = width * (CELL_SIZE + GAP) - GAP + 2;
-        const borderHeight = height * (CELL_SIZE + GAP) - GAP + 2;
+        const borderX = offset.x * (cellSize + GAP);
+        const borderY = offset.y * (cellSize + GAP);
+        const borderWidth = width * (cellSize + GAP) - GAP + 2;
+        const borderHeight = height * (cellSize + GAP) - GAP + 2;
 
         ctx.strokeStyle = UI_CONFIG.COLOR_POCKET_BORDER;
         ctx.lineWidth = 2;
@@ -48,19 +49,20 @@ export function drawInventoryBackground(
  */
 export function drawInventoryItems(
     ctx: CanvasRenderingContext2D,
-    state: InventoryState
+    state: InventoryState,
+    cellSize: number,
 ): void {
-    const { CELL_SIZE, GAP } = UI_CONFIG;
+    const { GAP } = UI_CONFIG;
 
     state.pockets.forEach(pocket => {
         const offset = pocket.definition.position;
 
         pocket.placedItems.forEach(placement => {
             // Calculate pixel position based on pocket offset + placement origin
-            const pxX = (offset.x + placement.originX) * (CELL_SIZE + GAP);
-            const pxY = (offset.y + placement.originY) * (CELL_SIZE + GAP);
+            const pxX = (offset.x + placement.originX) * (cellSize + GAP);
+            const pxY = (offset.y + placement.originY) * (cellSize + GAP);
 
-            drawLootItem(ctx, placement.item, pxX, pxY);
+            drawLootItem(ctx, placement.item, pxX, pxY, cellSize);
         });
     });
 }
@@ -72,16 +74,17 @@ export function drawHeldItem(
     ctx: CanvasRenderingContext2D,
     item: LootItem,
     mouseX: number,
-    mouseY: number
+    mouseY: number,
+    cellSize: number,
 ): void {
     const dims = getEffectiveDimensions(item);
-    const w = gridToPx(dims.width);
-    const h = gridToPx(dims.height);
+    const w = gridToPx(dims.width, cellSize);
+    const h = gridToPx(dims.height, cellSize);
 
     ctx.save();
     ctx.globalAlpha = 0.7; // Transparency for the ghost effect
     // Center the item on the mouse
-    drawLootItem(ctx, item, mouseX - w / 2, mouseY - h / 2);
+    drawLootItem(ctx, item, mouseX - w / 2, mouseY - h / 2, cellSize);
     ctx.restore();
 }
 
@@ -89,11 +92,12 @@ export function drawLootItem(
     ctx: CanvasRenderingContext2D,
     item: LootItem,
     pxX: number,
-    pxY: number
+    pxY: number,
+    cellSize: number,
 ): void {
     const dims = getEffectiveDimensions(item);
-    const w = gridToPx(dims.width);
-    const h = gridToPx(dims.height);
+    const w = gridToPx(dims.width, cellSize);
+    const h = gridToPx(dims.height, cellSize);
 
     ctx.fillStyle = item.color;
     ctx.fillRect(pxX, pxY, w, h);

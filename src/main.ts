@@ -26,6 +26,7 @@ const timerEl = document.getElementById("timer") as HTMLElement;
 const lootGenerationModeSelect = document.getElementById("select-lootmode") as HTMLSelectElement
 const gameModeSelect = document.getElementById("select-gamemode") as HTMLSelectElement
 const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
+const cellSizeSelect = document.getElementById("select-cellsize") as HTMLSelectElement;
 
 // 2. Global State
 let lastMouseX = 0;
@@ -54,8 +55,9 @@ function syncUI() {
     interactionCtx.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
 
     // Draw inventory items and queue
-    drawInventoryItems(invFgCtx, gameState.inventory);
-    drawInventoryItems(lootFgCtx, gameState.lootSource);
+    const cellSize = currentSettings.cellSize
+    drawInventoryItems(invFgCtx, gameState.inventory, cellSize);
+    drawInventoryItems(lootFgCtx, gameState.lootSource, cellSize);
 
     // Draw the "Ghost" item on the global overlay
     if (gameState.heldItem) {
@@ -124,8 +126,9 @@ function startMission() {
     }
 
     refreshCanvasSizes();
-    drawInventoryBackground(invBgCtx, gameState.inventory);
-    drawInventoryBackground(lootBgCtx, gameState.lootSource);
+    const cellSize = currentSettings.cellSize
+    drawInventoryBackground(invBgCtx, gameState.inventory, cellSize);
+    drawInventoryBackground(lootBgCtx, gameState.lootSource, cellSize);
 
     document.getElementById("btn-start")!.style.display = "none";
     document.getElementById("btn-extract")!.style.display = "inline-block";
@@ -171,7 +174,7 @@ function handleInventoryInteraction(
 ) {
     if (!gameState.startTime) return;
 
-    const mouse = screenToGrid(e.offsetX, e.offsetY);
+    const mouse = screenToGrid(e.offsetX, e.offsetY, currentSettings.cellSize);
 
     if (!isLootSource) {
         gameState.itemsStashedCount++;
@@ -309,6 +312,7 @@ function initSettings() {
     gearSelect.value = currentSettings.selectedGearKey;
     gameModeSelect.value = currentSettings.gameMode;
     lootGenerationModeSelect.value = currentSettings.lootMode;
+    console.log(currentSettings.cellSize)
 
     // Listen for changes
     gearSelect.addEventListener("change", () => {
@@ -335,6 +339,14 @@ function initSettings() {
             signalExtraction();
         }
     });
+
+    cellSizeSelect.value = currentSettings.cellSize.toString();
+
+    cellSizeSelect.addEventListener("change", () => {
+        currentSettings = { ...currentSettings, cellSize: parseInt(cellSizeSelect.value) };
+        saveSettings(currentSettings);
+        applySettings();
+    });
 }
 
 function applySettings() {
@@ -350,27 +362,29 @@ function applySettings() {
 
     // Refresh the visuals
     refreshCanvasSizes();
-    drawInventoryBackground(invBgCtx, gameState.inventory);
-    drawInventoryBackground(lootBgCtx, gameState.lootSource);
+    const cellSize = currentSettings.cellSize
+    drawInventoryBackground(invBgCtx, gameState.inventory, cellSize);
+    drawInventoryBackground(lootBgCtx, gameState.lootSource, cellSize);
 }
 
 function refreshCanvasSizes() {
-    const { CELL_SIZE, GAP } = UI_CONFIG;
+    const { GAP } = UI_CONFIG;
     // Calculate bounds based on the max x+width and y+height
     const invBounds = getInventoryBounds(gameState.inventory);
     const lootBounds = getInventoryBounds(gameState.lootSource);
+    const cellSize = currentSettings.cellSize
 
     // Width and Height should be derived from the actual grid extent
-    const invWidth = invBounds.width * (CELL_SIZE + GAP);
-    const invHeight = invBounds.height * (CELL_SIZE + GAP);
+    const invWidth = invBounds.width * (cellSize + GAP);
+    const invHeight = invBounds.height * (cellSize + GAP);
 
     inventoryBgCanvas.width = invWidth;
     inventoryBgCanvas.height = invHeight;
     inventoryFgCanvas.width = invWidth;
     inventoryFgCanvas.height = invHeight;
 
-    const lootWidth = lootBounds.width * (CELL_SIZE + GAP);
-    const lootHeight = lootBounds.height * (CELL_SIZE + GAP);
+    const lootWidth = lootBounds.width * (cellSize + GAP);
+    const lootHeight = lootBounds.height * (cellSize + GAP);
 
     lootBgCanvas.width = lootWidth;
     lootBgCanvas.height = lootHeight;
@@ -384,7 +398,7 @@ function refreshCanvasSizes() {
 
 window.addEventListener("resize", () => {
     refreshCanvasSizes();
-    drawInventoryBackground(invBgCtx, gameState.inventory);
+    drawInventoryBackground(invBgCtx, gameState.inventory, currentSettings.cellSize);
 });
 
 // Setup initial sizes and start loop
