@@ -9,12 +9,15 @@ export function saveSettings(settings: GameSettings): void {
 export function loadSettings(): GameSettings {
     const saved = localStorage.getItem(SETTINGS_KEY);
     if (!saved) return DEFAULT_SETTINGS;
-
     try {
-        // We merge with defaults to ensure new fields are populated
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-    } catch (e) {
-        console.error("Settings vault corrupted, resetting to defaults", e);
+        const parsed = JSON.parse(saved);
+        return {
+            ...DEFAULT_SETTINGS,
+            ...parsed,
+            countdownScoring: { ...DEFAULT_SETTINGS.countdownScoring, ...parsed.countdownScoring },
+            timeAttackScoring: { ...DEFAULT_SETTINGS.timeAttackScoring, ...parsed.timeAttackScoring },
+        };
+    } catch {
         return DEFAULT_SETTINGS;
     }
 }
