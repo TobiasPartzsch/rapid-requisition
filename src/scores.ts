@@ -29,11 +29,18 @@ export function getInitialRegistry(): ScoreRegistry {
 
 export function loadScores(): ScoreRegistry {
     const saved = localStorage.getItem(SCORES_KEY);
-    if (!saved) return INITIAL_REGISTRY;
+    const initial = getInitialRegistry();
+
+    if (!saved) return initial;
+
     try {
-        return { ...INITIAL_REGISTRY, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        return {
+            [GameMode.COUNTDOWN]: { ...initial[GameMode.COUNTDOWN], ...parsed[GameMode.COUNTDOWN] },
+            [GameMode.TIME_ATTACK]: { ...initial[GameMode.TIME_ATTACK], ...parsed[GameMode.TIME_ATTACK] }
+        };
     } catch {
-        return INITIAL_REGISTRY;
+        return initial;
     }
 }
 
