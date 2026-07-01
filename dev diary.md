@@ -154,3 +154,55 @@ Today's “Wide” Prototype State
 [x] Per-mode scoring rules (points/cell, time bonus, completion bonus)
 [x] Snap assist for item placement
 [x] Scoring settings UI with persistent localStorage storage
+
+### Session 7: Score Screen, Highscores and Scoring Overhaul
+#### Achievements
+- **Persistent Highscores**: Implemented a `ScoreRegistry` keyed by game mode
+  and gear ID, stored in localStorage with defensive merge on load to survive
+  schema changes gracefully.
+- **Score Screen**: Replaced the `alert()` end-game summary with a native
+  `<dialog>` modal showing a full score breakdown and the top 10 scores for
+  the current mode/gear combination.
+- **Score Browser**: Added a persistent "High Scores" button in the header
+  allowing free browsing of all mode/gear combinations at any time.
+- **Pilot Name**: Persistent player name input in the header, saved to
+  localStorage independently of game settings. Attached to all saved scores.
+- **Time Attack Scoring Overhaul**: Replaced the flat completion bonus with a
+  dynamic formula based on expected seconds per cell and time delta. Partial
+  packs still score; full clears earn a base bonus plus a time bonus scaled by
+  how far ahead of expectation the player finished.
+- **Item Colour Improvement**: Reworked `generateHsl` to sort dimensions before
+  hashing, ensuring rotated variants share a colour while distinct shapes
+  diverge meaningfully.
+- **Size Distribution Tuning**: Reduced dimension skew exponent from 5 to 3,
+  allowing larger items to appear more frequently. Extracted magic literal to
+  `GeneratorSettings`.
+- **Defensive Settings Migration**: `loadSettings` now merges saved data
+  against `DEFAULT_SETTINGS` with nested spreads, preventing stale localStorage
+  schemas from crashing on startup after a settings change.
+
+#### Technical Struggles & Solutions
+- **Duplicate `loadScores`**: Two diverging implementations existed across
+  `scoreCalculator.ts` and `scores.ts`. The safer deep-merge version was
+  consolidated into `scores.ts` and the redundant one removed.
+- **Stale Event Listeners on Dialog**: Re-opening the score dialog stacked
+  duplicate listeners. Resolved by cloning button nodes before attaching
+  handlers, discarding the old listeners cleanly.
+- **`itemsStashedCount` Overcounting**: Counter incremented on any inventory
+  canvas click rather than on successful placement. Fixed by moving the
+  increment inside the confirmed placement branch. Metric subsequently removed
+  as it added no information beyond the score breakdown.
+- **localStorage Schema Mismatch**: Renaming `completionBonus` to
+  `baseCompletionBonus` caused a crash on startup for existing saves.
+  Resolved with `localStorage.clear()` during development; prevented long-term
+  by the defensive merge in `loadSettings`.
+
+#### Prototype State
+[x] All Session 6 items
+[x] Persistent highscores per mode and gear
+[x] Score screen with breakdown and top 10 table
+[x] Score browser accessible at any time
+[x] Persistent pilot name
+[x] Time Attack scoring tied to elapsed time
+[x] Improved item colour and size distribution
+[x] Defensive settings migration
