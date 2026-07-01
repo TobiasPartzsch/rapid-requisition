@@ -43,7 +43,8 @@ function rollSkewedDimension(max: number): number {
 }
 
 function generateHsl(w: number, h: number): string {
-    const hue = (w * h * 137.5) % 360;
+    const [small, large] = w <= h ? [w, h] : [h, w];
+    const hue = (small * 137.5 + large * 97.3) % 360;
     return `hsl(${hue}, ${SETTINGS.saturation}%, ${SETTINGS.lightness}%)`;
 }
 
