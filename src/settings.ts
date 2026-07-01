@@ -18,3 +18,13 @@ export function loadSettings(): GameSettings {
         return DEFAULT_SETTINGS;
     }
 }
+
+const PILOT_NAME_KEY = "rapid_requisition_pilot_name";
+
+export function loadPilotName(): string {
+    return localStorage.getItem(PILOT_NAME_KEY) ?? "";
+}
+
+export function savePilotName(name: string): void {
+    localStorage.setItem(PILOT_NAME_KEY, name);
+}

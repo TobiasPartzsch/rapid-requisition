@@ -15,6 +15,11 @@
     <div id="game-container">
         <header>
             <h1>Rapid Requisition</h1>
+            <nav id="header-nav">
+                <label for="input-player-name">Scavanger</label>
+                <input id="input-player-name" type="text" maxlength="24" placeholder="Anonymous" />
+                <button id="btn-view-scores">High Scores</button>
+            </nav>
             <div id="mission-meta">
                 <span id="timer">00:00</span>
                 <button id="btn-start">Start Mission</button>
@@ -115,6 +120,56 @@
             [Space] (Rotate)</p>
     </footer>
     </div>
+    <dialog id="score-screen">
+        <div id="score-screen-inner">
+            <h2 id="score-screen-title">Mission Complete</h2>
+
+            <section id="score-breakdown" aria-label="Score Breakdown">
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Base Score</th>
+                            <td id="score-base"></td>
+                        </tr>
+                        <tr>
+                            <th>Completion Bonus</th>
+                            <td id="score-bonus"></td>
+                        </tr>
+                        <tr class="score-total-row">
+                            <th>Total</th>
+                            <td id="score-total"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="score-highscores" aria-label="High Scores">
+                <div id="score-filter-bar">
+                    <select id="score-filter-gear"></select>
+                    <select id="score-filter-mode">
+                        <option value="COUNTDOWN">Countdown</option>
+                        <option value="TIME_ATTACK">Time Attack</option>
+                    </select>
+                </div>
+                <table id="score-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="score-table-body"></tbody>
+                </table>
+            </section>
+
+            <div id="score-actions">
+                <button id="btn-play-again">Play Again</button>
+                <button id="btn-close-scores">Back to Menu</button>
+            </div>
+        </div>
+    </dialog>
     <script type="module" src="src/main.ts"></script>
 </body>
 

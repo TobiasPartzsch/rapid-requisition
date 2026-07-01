@@ -117,6 +117,7 @@ export interface HighScore {
     readonly score: number;
     readonly timestamp: number;
     readonly gearId: string;
+    readonly gameMode: GameMode;
 }
 
 export type ScoreTable = Record<GameMode, readonly HighScore[]>;

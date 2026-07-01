@@ -3,11 +3,12 @@ import { fillContainerSpatial, replenishContainerSpatial } from "./generator.js"
 import { findSnapOrigin, getEffectiveDimensions, getInventoryBounds, getOriginFromCenter, initializeInventory, rotateItem, tryPlaceAnywhere } from "./inventory.js";
 import { calculateScore, countOccupiedCells, countTotalCapacityFromPockets } from "./scoreCalculator.js";
 import { saveScore } from "./scores.js";
-import { loadSettings, saveSettings } from "./settings.js";
+import { loadPilotName, loadSettings, savePilotName, saveSettings } from "./settings.js";
 import { GameMode, GameState, InventoryState, LootGenerationMode } from "./types.js";
 import { screenToGrid, UI_CONFIG } from "./view/constants.js";
 import { drawInventoryBackground, drawInventoryItems } from "./view/inventoryRenderer.js";
 import { drawHeldItem } from "./view/itemRenderer.js";
+import { showScoresBrowser, showScoreScreen } from "./view/scoreRenderer.js";
 
 // 1. Canvas Contexts
 const inventoryBgCanvas = document.getElementById("inv-bg-canvas") as HTMLCanvasElement;
@@ -31,6 +32,7 @@ const timeBonusPerSecondSelect = document.getElementById("select-time-bonus-per-
 const timeAttackPointsSelect = document.getElementById("select-timeattack-points-per-cell") as HTMLSelectElement;
 const completionBonusSelect = document.getElementById("select-completion-bonus") as HTMLSelectElement;
 const cellSizeSelect = document.getElementById("select-cellsize") as HTMLSelectElement;
+const nameInput = document.getElementById("input-player-name") as HTMLInputElement;
 
 // 2. Global State
 let lastMouseX = 0;
@@ -142,7 +144,6 @@ function signalExtraction() {
     gameState.endTime = Date.now();
     const elapsedSeconds = (gameState.endTime - gameState.startTime) / 1000;
 
-    // Calculate the final score breakdown
     const scoreBreakdown = calculateScore(
         currentSettings.gameMode,
         gameState,
@@ -152,23 +153,27 @@ function signalExtraction() {
         currentSettings.timeLimitSeconds,
     );
 
-    // Save to High Scores
     saveScore(currentSettings.gameMode, currentSettings.selectedGearKey, {
-        playerName: "Player 1", // You could add an input for this later!
+        playerName: nameInput.value.trim() || "Anonymous",
         score: scoreBreakdown.total,
         timestamp: Date.now(),
         gearId: currentSettings.selectedGearKey,
-        // lootMode: currentSettings.mode
+        gameMode: currentSettings.gameMode,
     });
 
-    // Provide the "Surprise" reveal
-    alert(`Extraction Successful!\nTotal Score: ${scoreBreakdown.total}\nItems Stashed: ${gameState.itemsStashedCount}`);
-
-    // Reset mission state or return to menu
     gameState.startTime = null;
+    gameState.endTime = null;
 
     document.getElementById("btn-start")!.style.display = "inline-block";
     document.getElementById("btn-extract")!.style.display = "none";
+
+    showScoreScreen(
+        scoreBreakdown,
+        currentSettings.gameMode,
+        currentSettings.selectedGearKey,
+        () => startMission(),
+        () => { },
+    );
 }
 
 // 5. Interaction Handlers
@@ -303,6 +308,9 @@ lootFgCanvas.addEventListener("click", (e) => {
 
 document.getElementById("btn-start")?.addEventListener("click", startMission);
 document.getElementById("btn-extract")?.addEventListener("click", signalExtraction);
+document.getElementById("btn-view-scores")?.addEventListener("click", () => {
+    showScoresBrowser(() => { });
+});
 
 function initSettings() {
     // Populate Gear Select
@@ -403,6 +411,9 @@ function initSettings() {
         applySettings();
     });
 }
+
+nameInput.value = loadPilotName();
+nameInput.addEventListener("change", () => savePilotName(nameInput.value.trim()));
 
 function applySettings() {
     // This updates the game state based on settings
