@@ -65,7 +65,6 @@ export interface GameState {
     // Live Session Metrics
     startTime: number | null;
     endTime: number | null;
-    itemsStashedCount: number;
 }
 
 export interface CountdownScoringSettings {

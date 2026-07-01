@@ -45,7 +45,6 @@ let gameState: GameState = {
     heldItemSource: null,
     startTime: null,
     endTime: null,
-    itemsStashedCount: 0,
 };
 
 // 3. The Heartbeat (60 FPS)
@@ -105,7 +104,6 @@ function startMission() {
 
     gameState.startTime = Date.now();
     gameState.endTime = null;
-    gameState.itemsStashedCount = 0;
 
     timerEl.textContent = currentSettings.gameMode === GameMode.COUNTDOWN
         ? formatTime(currentSettings.timeLimitSeconds * 1000)
@@ -185,10 +183,6 @@ function handleInventoryInteraction(
     if (!gameState.startTime) return;
 
     const mouse = screenToGrid(e.offsetX, e.offsetY, currentSettings.cellSize);
-
-    if (!isLootSource) {
-        gameState.itemsStashedCount++;
-    }
 
     // Find the pocket under the mouse
     const pocket = inventory.pockets.find(p => {
