@@ -18,14 +18,16 @@ export function calculateScore(
     if (mode === GameMode.COUNTDOWN) {
         baseScore = occupiedCells * countdownScoring.pointsPerCell;
         if (isFullClear) {
-            console.log(timeLimitSeconds, elapsedSeconds, countdownScoring.timeBonusPerSecond)
             completionBonus = (timeLimitSeconds - elapsedSeconds)
                 * countdownScoring.timeBonusPerSecond;
         }
     } else {
         baseScore = occupiedCells * timeAttackScoring.pointsPerCell;
         if (isFullClear) {
-            completionBonus = timeAttackScoring.completionBonus;
+            const expectedSeconds = totalCapacity * timeAttackScoring.expectedSecondsPerCell;
+            const timeDelta = expectedSeconds - elapsedSeconds;
+            const timeBonus = Math.floor(timeDelta * timeAttackScoring.timeBonusPerSecond);
+            completionBonus = timeAttackScoring.baseCompletionBonus + Math.max(0, timeBonus);
         }
     }
 

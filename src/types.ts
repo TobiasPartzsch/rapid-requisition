@@ -74,7 +74,9 @@ export interface CountdownScoringSettings {
 
 export interface TimeAttackScoringSettings {
     readonly pointsPerCell: number;
-    readonly completionBonus: number;
+    readonly baseCompletionBonus: number;
+    readonly expectedSecondsPerCell: number;
+    readonly timeBonusPerSecond: number;
 }
 
 export interface ScoreBreakdown {
@@ -107,7 +109,9 @@ export const DEFAULT_SETTINGS: GameSettings = {
     },
     timeAttackScoring: {
         pointsPerCell: 1,
-        completionBonus: 100,
+        baseCompletionBonus: 100,
+        expectedSecondsPerCell: 10,
+        timeBonusPerSecond: 10,
     },
 };
 

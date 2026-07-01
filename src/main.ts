@@ -30,7 +30,9 @@ const gearSelect = document.getElementById("select-gear") as HTMLSelectElement;
 const countdownPointsSelect = document.getElementById("select-countdown-points-per-cell") as HTMLSelectElement;
 const timeBonusPerSecondSelect = document.getElementById("select-time-bonus-per-second") as HTMLSelectElement;
 const timeAttackPointsSelect = document.getElementById("select-timeattack-points-per-cell") as HTMLSelectElement;
-const completionBonusSelect = document.getElementById("select-completion-bonus") as HTMLSelectElement;
+const timeAttackBaseBonusSelect = document.getElementById("select-timeattack-base-bonus") as HTMLSelectElement;
+const timeAttackExpectedSecondsSelect = document.getElementById("select-timeattack-expected-seconds") as HTMLSelectElement;
+const timeAttackTimeBonusSelect = document.getElementById("select-timeattack-time-bonus") as HTMLSelectElement;
 const cellSizeSelect = document.getElementById("select-cellsize") as HTMLSelectElement;
 const nameInput = document.getElementById("input-player-name") as HTMLInputElement;
 
@@ -322,7 +324,9 @@ function initSettings() {
     countdownPointsSelect.value = currentSettings.countdownScoring.pointsPerCell.toString();
     timeBonusPerSecondSelect.value = currentSettings.countdownScoring.timeBonusPerSecond.toString();
     timeAttackPointsSelect.value = currentSettings.timeAttackScoring.pointsPerCell.toString();
-    completionBonusSelect.value = currentSettings.timeAttackScoring.completionBonus.toString();
+    timeAttackBaseBonusSelect.value = currentSettings.timeAttackScoring.baseCompletionBonus.toString();
+    timeAttackExpectedSecondsSelect.value = currentSettings.timeAttackScoring.expectedSecondsPerCell.toString();
+    timeAttackTimeBonusSelect.value = currentSettings.timeAttackScoring.timeBonusPerSecond.toString();
 
     updateScoringVisibility(currentSettings.gameMode)
 
@@ -385,12 +389,34 @@ function initSettings() {
         saveSettings(currentSettings);
         if (gameState.startTime) signalExtraction();
     });
-    completionBonusSelect.addEventListener("change", () => {
+    timeAttackBaseBonusSelect.addEventListener("change", () => {
         currentSettings = {
             ...currentSettings,
             timeAttackScoring: {
                 ...currentSettings.timeAttackScoring,
-                completionBonus: parseInt(completionBonusSelect.value)
+                baseCompletionBonus: parseInt(timeAttackBaseBonusSelect.value)
+            }
+        };
+        saveSettings(currentSettings);
+        if (gameState.startTime) signalExtraction();
+    });
+    timeAttackExpectedSecondsSelect.addEventListener("change", () => {
+        currentSettings = {
+            ...currentSettings,
+            timeAttackScoring: {
+                ...currentSettings.timeAttackScoring,
+                expectedSecondsPerCell: parseInt(timeAttackExpectedSecondsSelect.value)
+            }
+        };
+        saveSettings(currentSettings);
+        if (gameState.startTime) signalExtraction();
+    });
+    timeAttackTimeBonusSelect.addEventListener("change", () => {
+        currentSettings = {
+            ...currentSettings,
+            timeAttackScoring: {
+                ...currentSettings.timeAttackScoring,
+                timeBonusPerSecond: parseInt(timeAttackTimeBonusSelect.value)
             }
         };
         saveSettings(currentSettings);

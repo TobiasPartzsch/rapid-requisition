@@ -104,11 +104,29 @@
                             <option value="2">2 pts</option>
                             <option value="5">5 pts</option>
                         </select>
-                        <label for="select-completion-bonus">Completion Bonus</label>
-                        <select id="select-completion-bonus">
+
+                        <label for="select-timeattack-base-bonus">Base Completion Bonus</label>
+                        <select id="select-timeattack-base-bonus">
                             <option value="0">None</option>
                             <option value="100" selected>+100 pts</option>
                             <option value="250">+250 pts</option>
+                            <option value="500">+500 pts</option>
+                        </select>
+
+                        <label for="select-timeattack-expected-seconds">Expected Seconds per Cell</label>
+                        <select id="select-timeattack-expected-seconds">
+                            <option value="5">5 s</option>
+                            <option value="10" selected>10 s</option>
+                            <option value="15">15 s</option>
+                            <option value="20">20 s</option>
+                        </select>
+
+                        <label for="select-timeattack-time-bonus">Time Bonus per Second Ahead</label>
+                        <select id="select-timeattack-time-bonus">
+                            <option value="0">None</option>
+                            <option value="5">5 pts/s</option>
+                            <option value="10" selected>10 pts/s</option>
+                            <option value="25">25 pts/s</option>
                         </select>
                     </div>
                 </div>
