@@ -6,14 +6,16 @@ export interface GenerationConstraints {
     readonly maxHeight: number;
 }
 
-interface ColorSettings {
+interface GeneratorSettings {
     readonly saturation: number;
     readonly lightness: number;
+    readonly dimensionSkew: number;  // exponenent for the random number, higher means more skewing
 }
 
-const SETTINGS: ColorSettings = {
+const SETTINGS: GeneratorSettings = {
     saturation: 65,
-    lightness: 55
+    lightness: 55,
+    dimensionSkew: 3,
 };
 
 function getConstraintsFromInventory(inventory: InventoryState): GenerationConstraints {
@@ -39,7 +41,7 @@ export function generateLootForInventory(inventory: InventoryState): LootItem {
 }
 
 function rollSkewedDimension(max: number): number {
-    return Math.floor(Math.pow(Math.random(), 5) * max) + 1;
+    return Math.floor(Math.pow(Math.random(), SETTINGS.dimensionSkew) * max) + 1;
 }
 
 function generateHsl(w: number, h: number): string {
