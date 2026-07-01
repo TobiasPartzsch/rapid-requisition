@@ -7,8 +7,6 @@ export const SCORES_KEY = "rapid_requisition_scores_v1";
 export type ScoreRegistry = Record<GameMode, Record<string, readonly HighScore[]>>;
 // Usage: registry[GameMode.TIME_ATTACK]["HIP_BAG"] -> [Top 10]
 
-const INITIAL_REGISTRY: ScoreRegistry = getInitialRegistry();
-
 export function getInitialRegistry(): ScoreRegistry {
     const gearIds = Object.keys(EQUIPMENT_CATALOG);
 
